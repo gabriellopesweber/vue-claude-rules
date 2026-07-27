@@ -1,6 +1,6 @@
 {
   "name": "vue-claude-rules",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Regras compartilhadas de Claude Code para projetos Vue 3 + Vuetify + Pinia",
   "license": "MIT",
   "author": "Gabriel Lopes Weber",

@@ -2,6 +2,15 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.0.1 — 2026-07-27
+
+### Corrigido
+- `core/tests.md` — o gate de teste mora no **CI**, não no script de build. A v1.0.0 afirmava `audit → test → build`; o desenho correto é o build seguro fazer `audit → build` e a suíte rodar isolada no PR (install limpo → lint → unit → E2E em job separado). `pnpm test` local é conveniência; quem barra o merge é o CI.
+
+### Adicionado
+- `core/tests.md` — preâmbulo de **escopo**: a regra vale só para projetos que já têm suíte. Onde não há, o agente não deve criar a primeira suíte, o config nem o job de CI por conta própria — adotar testes é decisão do dono do projeto. Esses projetos usam um profile sem este arquivo.
+- `README.md` — regra do profile: só incluir regra que o projeto pratica de fato.
+
 ## v1.0.0 — 2026-07-27
 
 Extração inicial a partir do `.claude/rules/` do Medispace-ui (9 arquivos, 1.043 linhas), separando princípio portável de inventário de projeto.

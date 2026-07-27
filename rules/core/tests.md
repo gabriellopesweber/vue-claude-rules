@@ -1,9 +1,17 @@
 # Regras de Testes (Vitest)
 
+> **Escopo:** esta regra vale **apenas para projetos que já têm suíte de teste**. Ela descreve *como* testar bem onde se testa — não obriga a introduzir testes onde não há.
+>
+> Se o projeto não tem suíte (sem `pnpm test`, sem `vitest.config.js`), esta regra **não se aplica**: não crie a primeira suíte, o config nem o job de CI por conta própria. Adotar testes é decisão do dono do projeto, com custo de manutenção real — proponha, se fizer sentido, e espere a decisão. Nesses projetos o profile deve ser um que **não** inclua este arquivo (ex.: `site-static`).
+
 Stack: **Vitest** (unidade/componente). Para componentes/DOM, adicionar **@vue/test-utils** + ambiente **jsdom** (ver "Ambiente"). Para **E2E/smoke**, **Cypress** ou **Playwright** (ver seção própria).
 Comandos: `pnpm test` (run único, usar antes de commitar — como o lint) e `pnpm test:watch`.
 
-**Gate:** o `pnpm test` deve rodar dentro do pipeline de build seguro (audit → **test** → build) que alimenta preview e deploy — um teste vermelho **barra o deploy**. Mantenha a suíte sempre verde. Os nomes exatos dos scripts estão em `.claude/rules/project/stack.md`.
+**Onde mora o gate: no CI, não no script de build.** O pipeline de teste roda **isolado**, no PR, num ambiente limpo (`pnpm install --frozen-lockfile` → lint → unit → E2E). O deploy só acontece depois que esses checks passaram.
+
+O script de build seguro faz **audit → build**, e é isso mesmo — ele não reexecuta a suíte. Empacotar teste dentro do build acopla duas responsabilidades, dobra o tempo de deploy reexecutando o que o CI já validou, e faz um teste flaky travar um deploy de código já aprovado.
+
+Consequência prática: `pnpm test` local é **conveniência** — pega o erro antes do push. Quem **barra** o merge é o CI. Rode antes de commitar mesmo assim; descobrir a falha no seu terminal é mais barato que descobrir no PR. Os nomes dos scripts e o desenho do CI deste projeto estão em `.claude/rules/project/stack.md`.
 
 ## Tipos de teste (pirâmide)
 
@@ -134,7 +142,7 @@ describe('csvMoney', () => {
   - **Determinísticos** — usar uma **conta de teste dedicada** com dados estáveis; evitar depender de dado de produção. Credenciais em arquivo gitignored, nunca versionadas.
   - **Seletores por `data-test`**, não por texto/cor (resiliência a refactor de UI/i18n).
   - **Pré-condição de login programática** (comando custom que autentica via API) nos fluxos que não são sobre a tela de login — não logar pela UI a cada teste.
-  - **Não** rodam no gate de unidade (`pnpm test`); rodam via `pnpm test:e2e` em job/CI dedicado (precisam de app+backend+dados de pé).
+  - **Não** rodam junto do `pnpm test`; rodam via `pnpm test:e2e` em **job dedicado** do CI (precisam de app+backend+dados de pé), separado do job de lint+unit para que uma falha de E2E não se confunda com regressão de unidade.
 - **Feedback ao usuário (toast):** asserir o **tipo** via `[data-test="snackbar-success"]` / `[data-test="snackbar-error"]`, não o texto i18n. **Validação de campo:** asserir que `[data-test="<campo>"] .v-messages__message` existe — prova que a regra disparou sem acoplar à mensagem.
 - **Cuidado com dado de teste (write-side):** prefira **seeding idempotente** para garantir estado, em vez de depender do banco. Para um fluxo de **criação sem endpoint de limpeza** (ex.: signup), **stube a resposta de sucesso** (`cy.intercept`) — valida o comportamento do frontend sem sujar o backend — e cubra o **contrato real** pelo cenário de **erro/duplicidade** (rede real). Quando houver limpeza (delete/reset), pode-se voltar a criar+excluir no `after`.
 - Config, specs e estado atual da suíte E2E: `.claude/rules/project/stack.md`.
@@ -145,7 +153,7 @@ describe('csvMoney', () => {
 - [ ] **FIRST**: rápido, isolado, repetível, autovalidável.
 - [ ] Determinístico — bordas mockadas (stub/mock no lugar certo), sem rede/tempo/random reais.
 - [ ] Cobre edge cases (vazio, limites, inválido), não só o caminho feliz.
-- [ ] `pnpm test` verde **e** `pnpm lint` sem erros (os arquivos de teste também são lintados).
+- [ ] `pnpm test` verde **e** `pnpm lint` sem erros localmente (os arquivos de teste também são lintados) — o CI vai rodar os dois de novo no PR.
 
 ## Referências
 - Robert C. Martin — *Clean Code* (princípios **FIRST**).

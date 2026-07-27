@@ -65,10 +65,12 @@ Definem qual subconjunto de regras cada tipo de projeto carrega.
 
 | Profile | Para | Inclui |
 |---|---|---|
-| `spa-full` | SPA com backend: Pinia, axios, camadas repository/service/composable | 9 regras |
-| `site-static` | Site/landing sem backend próprio | 5 regras (sem repositories/services/composables de estado/tests) |
+| `spa-full` | SPA com backend: Pinia, axios, camadas repository/service/composable, suíte de teste | 9 regras |
+| `site-static` | Site/landing sem backend próprio e **sem suíte de teste** | 5 regras (sem repositories/services/composables de estado/tests) |
 
 Selecione via `claudeRules.profile` no `package.json` ou `--profile <nome>`.
+
+**Regra do profile:** só inclua uma regra que o projeto realmente pratica. `core/tests.md` descreve como testar bem onde já se testa — num projeto sem suíte ela vira pressão para o agente criar testes que ninguém pediu. Mesma lógica para `vue/repositories.md` e `vue/services.md` num site sem backend. Profile enxuto é feature, não falta.
 
 ## Regras
 
