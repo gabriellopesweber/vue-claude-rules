@@ -2,6 +2,16 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.2.0 — 2026-07-27
+
+Até aqui a adoção só funcionava com quem já conhecia a biblioteca: o `README` cobria instalar e sincronizar, mas os 4 catálogos de `project/` — a parte cara — eram trabalho manual não documentado. Numa sessão nova, ou com outra pessoa, não se sustentava.
+
+### Adicionado
+- **`vue-claude-rules init`** — detecta a stack (pinia/axios/vue-i18n/vitest/apexcharts), escolhe o profile, adiciona os scripts no `package.json` e **rascunha `.claude/rules/project/` lendo o `src/`**: componentes com props/emits/v-model (parse com balanceamento de chaves — `default: () => ({})` inclusive), composables por escopo, repositories com métodos, stores com chaves e campos persistidos, defaults do Vuetify, árvore de locales, scripts. Marca `TODO` em tudo que exige julgamento e nunca sobrescreve catálogo já preenchido (`--force` para regerar).
+- **Achados automáticos** no rascunho: repository **sem consumidor** (contrato preparado vs código morto) e **credencial de sessão em `localStorage`** — a divergência de `shared/composables.md`.
+- **`ADOPTING.md`** — passo a passo **escrito para um agente de código**, sem pressupor contexto da biblioteca: o que produzir, como fechar cada TODO, o que nunca fazer (editar `shared/`, instalar dependência para "cumprir" regra).
+- CLI unificada (`bin` → `scripts/cli.mjs`) com `init` e `sync`. `node scripts/sync.mjs` direto continua funcionando.
+
 ## v1.1.1 — 2026-07-27
 
 ### Corrigido

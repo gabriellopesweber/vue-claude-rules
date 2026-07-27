@@ -17,35 +17,26 @@ Nenhuma das duas serve sozinha: "reuse antes de criar" só funciona com a lista 
 
 ## Instalação num projeto
 
-```jsonc
-// package.json
-{
-  "devDependencies": {
-    "vue-claude-rules": "github:gabriellopesweber/vue-claude-rules#v1.0.0"
-  },
-  "scripts": {
-    "rules:sync": "node node_modules/vue-claude-rules/scripts/sync.mjs",
-    "rules:check": "node node_modules/vue-claude-rules/scripts/sync.mjs --check"
-  },
-  "claudeRules": { "profile": "spa-full" }
-}
+```bash
+pnpm add -D github:gabriellopesweber/vue-claude-rules
+pnpm exec vue-claude-rules init
+pnpm install && pnpm rules:sync
 ```
 
-```bash
-pnpm install
-pnpm rules:sync
-```
+O `init` detecta a stack (pinia/axios/vue-i18n/vitest/apexcharts), escolhe o profile, adiciona os scripts no `package.json` e **rascunha `.claude/rules/project/` lendo o seu `src/`**: componentes com props/emits/v-model, composables por escopo, repositories com seus métodos, stores com chaves de persistência, defaults do Vuetify, árvore de locales, scripts.
 
 Resultado:
 
 ```
 .claude/rules/
 ├── shared/            # gerado — NÃO EDITAR (banner em cada arquivo)
-├── project/           # inventário local — semeado só na 1ª vez, nunca sobrescrito
-└── .rules-version     # v1.0.0
+├── project/           # rascunho do seu código, com TODO onde precisa de julgamento
+└── .rules-version
 ```
 
-Depois copie `templates/CLAUDE.md` para a raiz do projeto e preencha a tabela de carregamento.
+O rascunho não é o catálogo pronto — falta o que só quem conhece o projeto sabe: o que cada componente faz, o que cada store guarda, onde o gate de teste roda. O `init` marca esses pontos com `TODO` e ainda **acusa achados**: repository sem consumidor, credencial de sessão em `localStorage`.
+
+**Vai pedir para um agente adotar?** Aponte-o para [`ADOPTING.md`](ADOPTING.md) — é o passo a passo escrito para ele, sem pressupor contexto.
 
 **Commite `.claude/rules/shared/`.** Os arquivos ficam disponíveis para o agente mesmo sem `node_modules`, e cada atualização vira um diff revisável no PR em vez de mudança invisível.
 
