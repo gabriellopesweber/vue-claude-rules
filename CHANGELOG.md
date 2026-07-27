@@ -2,6 +2,15 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.3.0 — 2026-07-27
+
+Um projeto **distribuído** (template à venda, boilerplate, entrega a cliente) não pode carregar a divisão `shared/`/`project/`: ela pressupõe um upstream que quem recebe não tem. Pior, virar `devDependency` amarra o `pnpm install` de todo comprador à existência de um repo pessoal, e exige git e rede na máquina dele.
+
+### Adicionado
+- **`build --standalone`** — gera um `.claude/` autocontido para distribuição: hierarquia achatada (`shared/x.md` → `x.md`, `project/catalog-ui.md` → `components.md`), banners de "gerado — não editar" removidos, referências cruzadas reescritas (inclusive as curtas, `` `shared/tests.md` ``), menções ao scaffold retiradas (ele não acompanha a distribuição) e `CLAUDE.md` escrito para quem recebe.
+- **Trava de vazamento** — o build sai com código 1 se sobrar menção ao pacote, à conta do autor, aos scripts `rules:*`, a `node_modules`, a nome de projeto interno, ou um `TODO` não preenchido. Validada no Velox: pegou três vazamentos reais na primeira execução (comparação com um projeto interno, o script de sync listado como script do produto, e a referência à divisão de camadas).
+- README ganhou a seção de distribuição, incluindo por que **não** usar este pacote como dependência de projeto distribuído — e o `npx` avulso como alternativa.
+
 ## v1.2.0 — 2026-07-27
 
 Até aqui a adoção só funcionava com quem já conhecia a biblioteca: o `README` cobria instalar e sincronizar, mas os 4 catálogos de `project/` — a parte cara — eram trabalho manual não documentado. Numa sessão nova, ou com outra pessoa, não se sustentava.

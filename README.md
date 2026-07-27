@@ -90,6 +90,26 @@ cp node_modules/vue-claude-rules/scaffold/composables/core/useAsync.js src/compo
 
 O `rules:sync` gera `.claude/rules/shared/scaffold.md` — o índice das primitivas, dentro de `.claude/rules/` onde o agente já olha — e reescreve os caminhos das regras para `node_modules/vue-claude-rules/scaffold/…`, que é onde o código realmente está no consumidor. O código não é copiado para o projeto: fonte única, sem duplicata para manter em sincronia.
 
+## Distribuir o projeto (template à venda, boilerplate, entrega a cliente)
+
+A divisão `shared/`/`project/` só faz sentido para quem consome este pacote. Quem **recebe o produto** não tem upstream: banner de "não editar", referência ao repositório de origem e processo alheio viram ruído — ou pior, dependência de um repo que não é dele.
+
+```bash
+vue-claude-rules build --standalone --out release/.claude --name "Meu Template"
+```
+
+Gera um `.claude/rules/` autocontido: hierarquia achatada (`shared/x.md` e `project/catalog-ui.md` viram `x.md` e `components.md` irmãos), banners removidos, referências reescritas, menções ao scaffold retiradas, mais um `CLAUDE.md` escrito para quem recebe.
+
+**Trava de vazamento:** o build falha (exit 1) se sobrar no material qualquer menção ao pacote, à conta do autor, aos scripts `rules:*`, a caminhos de `node_modules` — ou um `TODO` não preenchido. Corrija na origem e rode de novo; não há como enviar rascunho ao cliente por acidente.
+
+**Não coloque este pacote como dependência de um projeto distribuído.** Especificador `github:` exige git e rede na máquina de quem instala, e amarra o `install` dele à existência do seu repo — para sempre. Como `.claude/rules/shared/` é commitado, o agente funciona sem o pacote; para atualizar, use `npx` avulso:
+
+```jsonc
+"scripts": {
+  "rules:sync": "npx -y github:gabriellopesweber/vue-claude-rules sync"
+}
+```
+
 ## Regras
 
 ```
