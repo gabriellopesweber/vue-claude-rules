@@ -66,6 +66,14 @@ const resolveSelection = async () => {
   return { label: profileName, rules: profile.rules, catalogs: profile.catalogs }
 }
 
+/**
+ * As regras referenciam o scaffold por caminho relativo ao pacote (`scaffold/x.js`),
+ * que não resolve nada a partir da raiz do consumidor. Só no sync sabemos onde o
+ * pacote foi instalado — então é aqui que o caminho vira utilizável.
+ */
+const SCAFFOLD_PREFIX = 'node_modules/vue-claude-rules/scaffold/'
+const withScaffoldPaths = (text) => text.replace(/(?<!vue-claude-rules\/)scaffold\//g, SCAFFOLD_PREFIX)
+
 const banner = (source, version) =>
   [
     '<!--',
@@ -91,8 +99,13 @@ const main = async () => {
     }
     const basename = rulePath.split('/').pop()
     const body = await readFile(source, 'utf8')
-    expected.set(basename, banner(`rules/${rulePath}`, `v${version}`) + body)
+    expected.set(basename, banner(`rules/${rulePath}`, `v${version}`) + withScaffoldPaths(body))
   }
+
+  // Índice das primitivas dentro de .claude/rules/, onde o agente já olha —
+  // o código em si fica só no pacote, sem cópia no projeto.
+  const scaffoldIndex = await readFile(join(PKG_ROOT, 'scaffold', 'README.md'), 'utf8')
+  expected.set('scaffold.md', banner('scaffold/README.md', `v${version}`) + withScaffoldPaths(scaffoldIndex))
 
   if (checkOnly) {
     const problems = []

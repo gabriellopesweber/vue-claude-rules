@@ -25,6 +25,7 @@
 | Reutilização de UI, evitar duplicação, extrair componentes | `.claude/rules/shared/dry.md` | `.claude/rules/project/catalog-ui.md` |
 | Feedback ao usuário: toast, alerta global, inline | `.claude/rules/shared/feedback.md` | `.claude/rules/project/catalog-ui.md` |
 | Escrever/editar testes (Vitest), mocks, E2E | `.claude/rules/shared/tests.md` | `.claude/rules/project/stack.md` |
+| Adotar uma primitiva que a regra exige (`useAsync`, `useValidation`, toast…) | `.claude/rules/shared/scaffold.md` | `.claude/rules/project/catalog-composables.md` |
 
 ## Regras universais (sempre aplicar)
 - Nenhuma string hardcoded em templates — usar `t('chave')`

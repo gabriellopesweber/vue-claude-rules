@@ -2,6 +2,15 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.1.1 — 2026-07-27
+
+### Corrigido
+- **Referências ao scaffold não resolviam no consumidor.** A v1.1.0 apontava para `scaffold/composables/core/useAsync.js` — caminho relativo ao pacote, que da raiz do projeto não é nada. Só o sync sabe onde o pacote foi instalado, então é ele que agora reescreve para `node_modules/vue-claude-rules/scaffold/…`.
+
+### Adicionado
+- `rules:sync` gera `.claude/rules/shared/scaffold.md`, o índice das primitivas dentro de `.claude/rules/` — onde o agente já procura. O código continua só no pacote: fonte única, sem cópia para manter em sincronia.
+- `templates/CLAUDE.md` ganhou linha para "adotar uma primitiva que a regra exige".
+
 ## v1.1.0 — 2026-07-27
 
 ### Adicionado

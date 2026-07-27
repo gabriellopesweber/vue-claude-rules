@@ -2,7 +2,7 @@
 
 > **Escopo:** vale apenas para projetos com camada HTTP (repositories) e um `useAsync` já existente. Sem isso, esta regra **não se aplica** — a divisão service/composable só paga o próprio custo quando há chamadas de rede com loading/erro se repetindo.
 >
-> **Não tem `useAsync`?** O código base está em `scaffold/composables/core/useAsync.js` (ver `scaffold/README.md`). Copie quando o segundo lugar repetir `loading` + `try/catch` + toast de erro — não antes.
+> **Não tem `useAsync`?** O código base está em `scaffold/composables/core/useAsync.js` (ver `.claude/rules/shared/scaffold.md`). Copie quando o segundo lugar repetir `loading` + `try/catch` + toast de erro — não antes.
 >
 > **Catálogo dos services existentes:** `.claude/rules/project/catalog-data.md`.
 

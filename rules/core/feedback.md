@@ -4,7 +4,7 @@
 >
 > O que vale em qualquer projeto é a última linha: nunca `alert()`/`confirm()` nativos como UI.
 >
-> **Código base das três peças** em `scaffold/` — `useSnackbar` + `GlobalSnackbar.vue`, `useAlertManager` + `GlobalAlertStack.vue`, `InlineAlert.vue`. Adote sob demanda, na ordem em que a necessidade aparecer (ver `scaffold/README.md`).
+> **Código base das três peças** em `scaffold/` — `useSnackbar` + `GlobalSnackbar.vue`, `useAlertManager` + `GlobalAlertStack.vue`, `InlineAlert.vue`. Adote sob demanda, na ordem em que a necessidade aparecer (ver `.claude/rules/shared/scaffold.md`).
 
 Há **três** mecanismos. Escolha pela natureza da mensagem — não misture.
 Os nomes concretos dos componentes/composables deste projeto estão em `.claude/rules/project/catalog-ui.md`.

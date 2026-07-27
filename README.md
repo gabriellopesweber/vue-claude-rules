@@ -97,6 +97,8 @@ cp node_modules/vue-claude-rules/scaffold/composables/core/useAsync.js src/compo
 
 É código seu a partir da cópia; o `rules:sync` nunca toca em `src/`. **Adote sob demanda**, não em bloco — cada peça tem um gatilho documentado em [`scaffold/README.md`](scaffold/README.md).
 
+O `rules:sync` gera `.claude/rules/shared/scaffold.md` — o índice das primitivas, dentro de `.claude/rules/` onde o agente já olha — e reescreve os caminhos das regras para `node_modules/vue-claude-rules/scaffold/…`, que é onde o código realmente está no consumidor. O código não é copiado para o projeto: fonte única, sem duplicata para manter em sincronia.
+
 ## Regras
 
 ```
