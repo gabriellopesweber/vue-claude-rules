@@ -1,0 +1,15 @@
+{
+  "name": "site-static",
+  "description": "Site/landing sem backend próprio: Vue 3 + Vuetify (+ i18n). Sem Pinia, sem axios, sem camada repository/service.",
+  "rules": [
+    "core/dry.md",
+    "core/feedback.md",
+    "vue/vue.md",
+    "vuetify/vuetify.md",
+    "i18n/i18n.md"
+  ],
+  "catalogs": [
+    "catalog-ui.md",
+    "stack.md"
+  ]
+}

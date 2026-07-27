@@ -1,0 +1,28 @@
+{
+  "name": "vue-claude-rules",
+  "version": "1.0.0",
+  "description": "Regras compartilhadas de Claude Code para projetos Vue 3 + Vuetify + Pinia",
+  "license": "MIT",
+  "author": "Gabriel Lopes Weber",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabriellopesweber/vue-claude-rules.git"
+  },
+  "type": "module",
+  "bin": {
+    "vue-claude-rules": "./scripts/sync.mjs"
+  },
+  "files": [
+    "rules",
+    "templates",
+    "profiles",
+    "scripts"
+  ],
+  "keywords": [
+    "claude-code",
+    "vue",
+    "vuetify",
+    "pinia",
+    "conventions"
+  ]
+}
