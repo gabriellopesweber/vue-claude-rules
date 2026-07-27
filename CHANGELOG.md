@@ -5,7 +5,7 @@ Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **majo
 ## v1.4.1 — 2026-07-27
 
 ### Corrigido
-- **Detecção de placeholder do  gerava falso positivo em catálogo preenchido.** Heurística por forma do token acusava  (slot prop),  (objeto JS),  (forma de retorno) e  (caminho). Agora compara com os placeholders reais extraídos dos templates do pacote, ignorando trechos de código dos dois lados — validado contra os dois projetos já adotados, sem nenhum falso positivo.
+- **Detecção de placeholder do `rules:check` gerava falso positivo em catálogo preenchido.** A heurística por forma do token acusava conteúdo legítimo: `{ mobile }` (slot prop), `{ publicRequest: true }` (objeto JS), `{ data, loading, error }` (forma de retorno) e `src/views/{feature}/` (caminho). Um gate que acusa trabalho concluído é pior que gate nenhum. Agora compara com os placeholders reais extraídos dos templates do pacote, ignorando trechos de código dos dois lados — validado contra Medispace-ui e Velox (zero falso positivo) e contra um boilerplate com `{Nome do Projeto}` por preencher (ainda pego).
 
 ## v1.4.0 — 2026-07-27
 
