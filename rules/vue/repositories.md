@@ -1,5 +1,7 @@
 # Regras de Repository / HTTP
 
+> **Escopo:** vale apenas para projetos que **consomem uma API** e já têm a camada montada (axios + `src/services/api.js` + `src/repositories/`). Num site estático ou numa app sem backend próprio, esta regra **não se aplica** — não instale axios nem crie a camada por conta própria para "seguir o padrão".
+>
 > **Catálogo dos repositories e esquema de autenticação:** `.claude/rules/project/catalog-data.md` e `.claude/rules/project/stack.md`.
 
 ## Regra principal

@@ -63,18 +63,44 @@ git add .claude/rules && git commit -m "chore: rules v1.1.0"
 
 Definem qual subconjunto de regras cada tipo de projeto carrega.
 
-| Profile | Para | Inclui |
+| Profile | Para | Regras |
 |---|---|---|
-| `spa-full` | SPA com backend: Pinia, axios, camadas repository/service/composable, suíte de teste | 9 regras |
-| `site-static` | Site/landing sem backend próprio e **sem suíte de teste** | 5 regras (sem repositories/services/composables de estado/tests) |
+| `spa-full` | SPA com backend **e** suíte de teste | 9 |
+| `spa` | SPA com backend, sem testes | 8 |
+| `site` | Site/landing com i18n, sem backend nem estado global | 4 |
+| `minimal` | Vue + Vuetify apenas | 3 |
 
 Selecione via `claudeRules.profile` no `package.json` ou `--profile <nome>`.
 
-**Regra do profile:** só inclua uma regra que o projeto realmente pratica. `core/tests.md` descreve como testar bem onde já se testa — num projeto sem suíte ela vira pressão para o agente criar testes que ninguém pediu. Mesma lógica para `vue/repositories.md` e `vue/services.md` num site sem backend. Profile enxuto é feature, não falta.
+**Regra do profile: só inclua regra que o projeto realmente pratica.** `core/tests.md` descreve como testar bem *onde já se testa* — num projeto sem suíte ela vira pressão para o agente criar testes que ninguém pediu. Mesmo raciocínio para `i18n.md` sem vue-i18n, `repositories.md`/`services.md` sem backend, `feedback.md` sem stack de alertas. Profile enxuto é feature, não falta.
+
+Cada regra condicional carrega um **preâmbulo de escopo** dizendo o que pressupõe e o que fazer quando não existe — rede de segurança para quando o profile estiver errado.
+
+### Lista custom
+
+Projeto raramente cabe exatamente num bundle. `claudeRules.rules` vence o profile:
+
+```jsonc
+"claudeRules": {
+  "rules": ["core/dry.md", "core/tests.md", "vue/vue.md", "vuetify/vuetify.md", "i18n/i18n.md"],
+  "catalogs": ["catalog-ui.md", "stack.md"]
+}
+```
+
+## scaffold — o código das primitivas
+
+As regras pressupõem primitivas (`useAsync`, `useValidation`, `useSnackbar`, `useAlertManager`, `withSetup`…). [`scaffold/`](scaffold/) traz a implementação de cada uma.
+
+```bash
+cp node_modules/vue-claude-rules/scaffold/composables/core/useAsync.js src/composables/core/
+```
+
+É código seu a partir da cópia; o `rules:sync` nunca toca em `src/`. **Adote sob demanda**, não em bloco — cada peça tem um gatilho documentado em [`scaffold/README.md`](scaffold/README.md).
 
 ## Regras
 
 ```
+scaffold/          código base das primitivas (copiar sob demanda)
 rules/
 ├── core/           agnóstico de stack
 │   ├── dry.md          princípio de reuso, quando extrair, anti-padrões

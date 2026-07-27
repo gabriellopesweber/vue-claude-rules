@@ -1,0 +1,11 @@
+{
+  "name": "minimal",
+  "description": "Vue 3 + Vuetify apenas. Sem i18n, sem estado global, sem backend, sem testes.",
+  "requires": [],
+  "rules": [
+    "core/dry.md",
+    "vue/vue.md",
+    "vuetify/vuetify.md"
+  ],
+  "catalogs": ["catalog-ui.md", "stack.md"]
+}

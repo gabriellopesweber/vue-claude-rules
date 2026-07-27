@@ -82,11 +82,16 @@ O dialog base do projeto deve expor `mobile` como slot prop do slot `#actions`:
 **Regra:** responsividade mora no componente base/compartilhado, não em cada consumidor. Se o header/dialog base já trata mobile, **não** repetir `:block="mobile"` / `:size="mobile ? … : …"` nos filhos.
 
 ## Tema
+
+*Aplica-se a projetos com alternância dark/light. Se o projeto tem um tema só, ignore esta seção — não construa toggle de tema por conta própria.*
+
 - Usar o composable `useAppTheme()` — não usar `useTheme()` diretamente nas views
 - Mudar tema: `theme.change('dark' | 'light')` — **nunca** `theme.global.name.value = x` (deprecated no Vuetify 4)
 - Toggle de tema: usar o componente existente do projeto — não recriar
 
 ## ApexCharts — padrão dark mode
+
+*Só se aplica onde `vue3-apexcharts` já é dependência. Não é recomendação de biblioteca de gráficos.*
 
 Gráficos que usam `vue3-apexcharts` seguem este padrão obrigatório:
 

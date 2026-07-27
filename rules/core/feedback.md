@@ -1,5 +1,11 @@
 # Regras de Feedback ao Usuário (toast, alerta persistente, inline)
 
+> **Escopo:** esta regra descreve como **escolher** entre mecanismos de feedback que o projeto já tem. Ela **não** obriga a construir os três. Um site institucional que só precisa de um toast não deve ganhar um `useAlertManager` + `GlobalAlertStack` para "ficar completo" — construa o segundo mecanismo quando aparecer a primeira mensagem que precisa persistir, não antes.
+>
+> O que vale em qualquer projeto é a última linha: nunca `alert()`/`confirm()` nativos como UI.
+>
+> **Código base das três peças** em `scaffold/` — `useSnackbar` + `GlobalSnackbar.vue`, `useAlertManager` + `GlobalAlertStack.vue`, `InlineAlert.vue`. Adote sob demanda, na ordem em que a necessidade aparecer (ver `scaffold/README.md`).
+
 Há **três** mecanismos. Escolha pela natureza da mensagem — não misture.
 Os nomes concretos dos componentes/composables deste projeto estão em `.claude/rules/project/catalog-ui.md`.
 

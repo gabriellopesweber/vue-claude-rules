@@ -9,9 +9,11 @@ Comandos: `pnpm test` (run único, usar antes de commitar — como o lint) e `pn
 
 **Onde mora o gate: no CI, não no script de build.** O pipeline de teste roda **isolado**, no PR, num ambiente limpo (`pnpm install --frozen-lockfile` → lint → unit → E2E). O deploy só acontece depois que esses checks passaram.
 
-O script de build seguro faz **audit → build**, e é isso mesmo — ele não reexecuta a suíte. Empacotar teste dentro do build acopla duas responsabilidades, dobra o tempo de deploy reexecutando o que o CI já validou, e faz um teste flaky travar um deploy de código já aprovado.
+O script de build seguro faz **audit → build** — não reexecuta a suíte. Empacotar teste dentro do build acopla duas responsabilidades, dobra o tempo de deploy reexecutando o que o CI já validou, e faz um teste flaky travar um deploy de código já aprovado.
 
-Consequência prática: `pnpm test` local é **conveniência** — pega o erro antes do push. Quem **barra** o merge é o CI. Rode antes de commitar mesmo assim; descobrir a falha no seu terminal é mais barato que descobrir no PR. Os nomes dos scripts e o desenho do CI deste projeto estão em `.claude/rules/project/stack.md`.
+Consequência prática: `pnpm test` local é **conveniência** — pega o erro antes do push. Quem **barra** o merge é o CI. Rode antes de commitar mesmo assim; descobrir a falha no seu terminal é mais barato que descobrir no PR.
+
+> Projeto **sem CI** pode legitimamente gatilhar a suíte dentro do `build:*:secure` — é o gate possível ali. Isso é fato do projeto, não violação: onde o gate roda de fato está em `.claude/rules/project/stack.md`, e é essa a fonte de verdade.
 
 ## Tipos de teste (pirâmide)
 
@@ -105,16 +107,11 @@ describe('csvMoney', () => {
 - Padrão do projeto: **`node`** (lógica pura, composables com `ref`/`computed`). Rápido, sem DOM.
 - Para **componentes** ou código que toca DOM (`document`, `Blob`, `URL.createObjectURL`): usar **jsdom** — no topo do arquivo `// @vitest-environment jsdom` ou configurar por glob. Adicionar `@vue/test-utils` para montar componentes.
 - **Composable sem ciclo de vida / provide-inject** (só Reactivity API): teste **invocando direto** e asserindo o retorno.
-- **Composable com `onMounted`/`onUnmounted`/`provide`-`inject` ou cujos `watch (flush:'pre')` precisam de instância**: monte num **componente host** com o helper `withSetup` — watchers `pre`/`post` só fazem flush dentro de um componente:
+- **Composable com `onMounted`/`onUnmounted`/`provide`-`inject` ou cujos `watch (flush:'pre')` precisam de instância**: monte num **componente host** com o helper `withSetup` — watchers `pre`/`post` só fazem flush dentro de um componente. Código base em `scaffold/test-utils/withSetup.js`; copie para `src/test-utils/`.
   ```js
-  // src/test-utils/withSetup.js
-  import { createApp } from 'vue'
-  export function withSetup(composable) {
-    let result
-    const app = createApp({ setup() { result = composable(); return () => {} } })
-    app.mount(document.createElement('div')) // requer env jsdom
-    return [result, app] // app.unmount() dispara onUnmounted
-  }
+  const [result, app] = withSetup(() => useFeature())
+  // ... asserts
+  app.unmount() // dispara onUnmounted
   ```
   Não criar teste que dependa de `nextTick` para um watcher de composable **solto** (sem host) — não vai flushar.
 

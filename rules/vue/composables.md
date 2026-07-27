@@ -1,8 +1,18 @@
 # Regras de Composables e Estado
 
+> **Escopo por seção:** a parte de **composables** vale para qualquer projeto Vue. As seções de **Pinia/persistência** e de **validação** pressupõem infraestrutura que pode não existir:
+>
+> | Seção | Pressupõe | Se não existe |
+> |---|---|---|
+> | Persistência via Pinia | `pinia` + `pinia-plugin-persistedstate` | Não instale Pinia para guardar uma preferência — `ref` no módulo ou `localStorage` encapsulado num composable resolve. A regra existe para impedir `localStorage` **espalhado**, não para exigir Pinia. |
+> | Validação via `useValidation` | `src/validations/` + `validation.json` | Adote o código base de `scaffold/` (`useValidation.js` + `validations/` + `locales/validation.json`) quando as regras começarem a repetir entre formulários; até lá, as regras da lib de UI bastam. |
+> | Orquestrador + Filiações | uma view genuinamente pesada | Padrão para views que já doem. Aplicar numa view simples é overhead. |
+>
 > **Antes de criar qualquer composable, consulte o catálogo do projeto** (`.claude/rules/project/catalog-composables.md`) — a lista do que já existe é verdade local, não vive aqui.
 
 ## Validação de formulários — regra obrigatória
+
+*(onde a camada `src/validations/` existe — ver escopo acima)*
 
 Todo `:rules` **deve** vir de `useValidation().validate(labelKey, 'regra1|regra2')` — nunca regra inline anônima. Se a regra não existir, **criar o handler** em `src/validations/rules/<nome>.js`, exportar em `src/validations/index.js` e adicionar a mensagem em `validation.json` (`validation.<nome>`).
 

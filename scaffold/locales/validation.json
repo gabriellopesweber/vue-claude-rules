@@ -1,0 +1,14 @@
+{
+  "validation": {
+    "required": "O campo {label} é obrigatório",
+    "cnpj": "O campo {label} deve ser um CNPJ válido",
+    "email": "O campo {label} precisa ser um e-mail válido",
+    "cpf": "O campo {label} deve ser um CPF válido",
+    "min": "O campo {label} deve ter no mínimo {arg0} caracteres",
+    "minValue": "O campo {label} deve ser no mínimo {arg0}",
+    "maxValue": "O campo {label} deve ser no máximo {arg0}",
+    "hasDigit": "O campo {label} deve conter pelo menos um número",
+    "hasSpecialChar": "O campo {label} deve conter pelo menos um caractere especial",
+    "matches": "O campo {label} não coincide"
+  }
+}

@@ -29,14 +29,41 @@ const cliProfile = flagIndex !== -1 ? args[flagIndex + 1] : null
 
 const readJson = async (path) => JSON.parse(await readFile(path, 'utf8'))
 
-const resolveProfileName = async () => {
-  if (cliProfile) return cliProfile
+const readConsumerConfig = async () => {
   const consumerPkg = join(CWD, 'package.json')
-  if (existsSync(consumerPkg)) {
-    const pkg = await readJson(consumerPkg)
-    if (pkg.claudeRules?.profile) return pkg.claudeRules.profile
+  if (!existsSync(consumerPkg)) return {}
+  const pkg = await readJson(consumerPkg)
+  return pkg.claudeRules ?? {}
+}
+
+/**
+ * Resolve o conjunto de regras. `claudeRules.rules` no package.json do consumidor
+ * vence o profile — um projeto raramente cabe exatamente num bundle pronto.
+ */
+const resolveSelection = async () => {
+  const config = await readConsumerConfig()
+
+  if (Array.isArray(config.rules) && config.rules.length) {
+    return {
+      label: 'custom (claudeRules.rules)',
+      rules: config.rules,
+      catalogs: config.catalogs ?? ['catalog-ui.md', 'stack.md'],
+    }
   }
-  return 'spa-full'
+
+  const profileName = cliProfile ?? config.profile ?? 'spa-full'
+  const profilePath = join(PKG_ROOT, 'profiles', `${profileName}.json`)
+
+  if (!existsSync(profilePath)) {
+    const available = (await readdir(join(PKG_ROOT, 'profiles')))
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.replace('.json', ''))
+    console.error(`[rules] profile "${profileName}" não existe. Disponíveis: ${available.join(', ')}`)
+    process.exit(1)
+  }
+
+  const profile = await readJson(profilePath)
+  return { label: profileName, rules: profile.rules, catalogs: profile.catalogs }
 }
 
 const banner = (source, version) =>
@@ -52,20 +79,18 @@ const banner = (source, version) =>
 
 const main = async () => {
   const { version } = await readJson(join(PKG_ROOT, 'package.json'))
-  const profileName = await resolveProfileName()
-  const profilePath = join(PKG_ROOT, 'profiles', `${profileName}.json`)
-
-  if (!existsSync(profilePath)) {
-    console.error(`[rules] profile "${profileName}" não existe em profiles/`)
-    process.exit(1)
-  }
-
-  const profile = await readJson(profilePath)
+  const selection = await resolveSelection()
+  const profileName = selection.label
   const expected = new Map()
 
-  for (const rulePath of profile.rules) {
+  for (const rulePath of selection.rules) {
+    const source = join(PKG_ROOT, 'rules', rulePath)
+    if (!existsSync(source)) {
+      console.error(`[rules] regra "${rulePath}" não existe em rules/`)
+      process.exit(1)
+    }
     const basename = rulePath.split('/').pop()
-    const body = await readFile(join(PKG_ROOT, 'rules', rulePath), 'utf8')
+    const body = await readFile(source, 'utf8')
     expected.set(basename, banner(`rules/${rulePath}`, `v${version}`) + body)
   }
 
@@ -104,7 +129,7 @@ const main = async () => {
 
   await mkdir(PROJECT_DIR, { recursive: true })
   const seeded = []
-  for (const catalog of profile.catalogs ?? []) {
+  for (const catalog of selection.catalogs ?? []) {
     const target = join(PROJECT_DIR, catalog)
     if (existsSync(target)) continue
     await copyFile(join(PKG_ROOT, 'templates', catalog), target)
