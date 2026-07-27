@@ -129,12 +129,27 @@ const main = async () => {
     // sinal de conclusão falso para um agente com pressa — e o critério de
     // sucesso do ADOPTING.md é justamente este comando.
     if (!allowIncomplete) {
+      // Um catálogo preenchido é cheio de chaves legítimas: `{ mobile }` (slot prop),
+      // `{ publicRequest: true }` (objeto JS), `{ data, loading, error }` (forma de
+      // retorno), `src/views/{feature}/` (caminho), `{en,pt-BR}` (brace expansion).
+      // Toda heurística sobre a forma do token gera falso positivo em cima disso.
+      // O sinal confiável é outro: o token existe **nos templates deste pacote**.
+      const stripCode = (text) => text.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '')
+
+      const templateTokens = new Set()
+      for (const file of (await readdir(join(PKG_ROOT, 'templates'))).filter((f) => f.endsWith('.md'))) {
+        const raw = await readFile(join(PKG_ROOT, 'templates', file), 'utf8')
+        for (const token of stripCode(raw).match(/\{[^}\n]{2,40}\}/g) ?? []) templateTokens.add(token)
+      }
+
       const pending = []
       const scan = async (path, label) => {
         if (!existsSync(path)) return
         const content = await readFile(path, 'utf8')
         const todos = content.match(/\bTODO\b/g)?.length ?? 0
-        const placeholders = content.match(/\{[A-Za-zÀ-ú][^}\n]{2,30}\}/g)?.length ?? 0
+        const placeholders = (stripCode(content).match(/\{[^}\n]{2,40}\}/g) ?? []).filter((t) =>
+          templateTokens.has(t),
+        ).length
         if (todos || placeholders) {
           pending.push(
             `${label}: ${[todos && `${todos} TODO`, placeholders && `${placeholders} placeholder`].filter(Boolean).join(', ')}`,

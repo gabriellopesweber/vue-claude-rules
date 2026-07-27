@@ -10,7 +10,7 @@
 |---|---|---|
 | `useSnackbar` | showMessage(text, type) | Feedback ao usuário (toasts) |
 | `useAppTheme` | isDark, toggleTheme, initTheme | Modo dark/light |
-| `useAsync(fn)` | { data, loading, error, execute } | Wrap de qualquer async com estado |
+| `useAsync(fn)` | `{ data, loading, error, execute }` | Wrap de qualquer async com estado |
 | `useValidation` | validate(labelKey, rulesString) | Regras de validação de formulários |
 
 ### `auth/`

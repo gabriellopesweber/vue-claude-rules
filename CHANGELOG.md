@@ -2,6 +2,11 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.4.1 — 2026-07-27
+
+### Corrigido
+- **Detecção de placeholder do  gerava falso positivo em catálogo preenchido.** Heurística por forma do token acusava  (slot prop),  (objeto JS),  (forma de retorno) e  (caminho). Agora compara com os placeholders reais extraídos dos templates do pacote, ignorando trechos de código dos dois lados — validado contra os dois projetos já adotados, sem nenhum falso positivo.
+
 ## v1.4.0 — 2026-07-27
 
 Correções a partir de uma adoção real feita por outro agente, num boilerplate Vuetify puro (profile `minimal`). Quase tudo tinha a mesma raiz: **o gerador escrevia sem consultar o profile ativo**, produzindo link morto e — pior — orientação ativamente errada.
