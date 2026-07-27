@@ -2,6 +2,24 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.4.0 — 2026-07-27
+
+Correções a partir de uma adoção real feita por outro agente, num boilerplate Vuetify puro (profile `minimal`). Quase tudo tinha a mesma raiz: **o gerador escrevia sem consultar o profile ativo**, produzindo link morto e — pior — orientação ativamente errada.
+
+### Corrigido
+- **`CLAUDE.md` era copiado byte a byte do template**, com `{Nome do Projeto}` literal e 6 das 10 linhas da tabela apontando para regras que o profile `minimal` nunca sincroniza. As "regras universais" mandavam usar `t()` e "nunca chamar axios diretamente" num projeto sem i18n e sem axios. Agora é **gerado**: tabela filtrada pelas regras que existem em `shared/`, regras universais filtradas pela stack detectada, nome vindo do `package.json`.
+- **Os catálogos gerados referenciavam regras ausentes do profile** — `catalog-ui.md` linkava `feedback.md`, `catalog-data.md` linkava `repositories.md`/`services.md`. Toda referência agora passa por um filtro que só deixa passar o que o profile sincroniza; sem referência viva, o cabeçalho sai sem link.
+- **`rules:check` saía 0 com a adoção pela metade** — catálogos cheios de `TODO` e `CLAUDE.md` com placeholder satisfaziam o critério de sucesso do próprio `ADOPTING.md`. Agora falha listando o que falta (`--allow-incomplete` para checar só a sincronia, em CI de projeto já adotado).
+- **`init` dizia "project/ preservado (já preenchido)"** sobre arquivos que só existiam. Agora diz "não sobrescrito" e acusa separadamente os que ainda têm `TODO`.
+- **Defaults do Vuetify não eram extraídos** — o regex dependia de indentação exata, quebrando a promessa de `shared/vuetify.md` de que a tabela está em `project/stack.md`. Agora usa balanceamento de chaves, procura o plugin em mais caminhos, e pede a tabela à mão quando não acha o bloco. Extrai também os temas (tema único vira "não construir toggle por conta própria").
+- **Seção vazia virava linha morta.** `_Nenhum X_` num boilerplate desperdiça o caso mais provável do público-alvo. Agora emite orientação prospectiva: o critério para o primeiro componente, o primeiro composable, e por que não instalar Pinia/axios/i18n só para "seguir o padrão".
+- **`init` gerava 4 catálogos** mesmo em profiles que declaram 2, deixando arquivo órfão que o `CLAUDE.md` não referencia.
+
+### Adicionado
+- **Detecção de projeto distribuído** — nome com kit/template/starter, README de ponto de partida, poucas views sem camada de API. O `init` avisa para considerar `--dist` antes de a `devDependency` entrar.
+- `--dist` promovido ao bloco de comandos do passo 1 do `ADOPTING.md`, com `npx` no lugar de `pnpm exec` (que valida `node_modules` antes de rodar e pode abortar por problema alheio ao pacote, com stack trace do próprio pnpm).
+- `ADOPTING.md`: `pnpm lint` ganhou "se houver script"; o `git rm` das regras antigas virou comando guardado, que não erra numa adoção nova; e ficou explícito que o marcador `TODO: revisar` do cabeçalho é o visto de revisão a ser apagado.
+
 ## v1.3.1 — 2026-07-27
 
 ### Corrigido

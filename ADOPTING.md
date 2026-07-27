@@ -18,19 +18,28 @@ A ideia central: **`shared/` é princípio** (como decidir, vale para todos os p
 
 ## Passo 1 — instalar e rascunhar
 
+**O projeto é distribuído** — template à venda, boilerplate, starter, entrega a cliente? Use `init --dist`. O `init` avisa se detectar os sinais, mas decida antes: sem `--dist`, entra uma `devDependency` `github:` que exige git e rede na máquina de quem instala e amarra o `install` dele à existência de um repo alheio, para sempre.
+
 ```bash
+# projeto normal
+npx -y github:gabriellopesweber/vue-claude-rules init
 pnpm add -D github:gabriellopesweber/vue-claude-rules
-pnpm exec vue-claude-rules init
 pnpm install && pnpm rules:sync
+
+# projeto distribuído (nenhuma dependência entra no package.json)
+npx -y github:gabriellopesweber/vue-claude-rules init --dist
+pnpm rules:sync
 ```
+
+> Use `npx`, não `pnpm exec`: o `pnpm exec` valida o estado de `node_modules` antes de rodar qualquer coisa e pode abortar por um problema de instalação sem relação com este pacote (build script não aprovado, por exemplo), com um stack trace do próprio pnpm.
 
 O `init` detecta a stack (pinia/axios/vue-i18n/vitest/apexcharts), escolhe o profile, adiciona os scripts `rules:sync`/`rules:check` no `package.json` e **rascunha os catálogos de `project/` lendo o `src/`** — nomes de componentes, props, emits, composables por escopo, repositories e seus métodos, stores e chaves de persistência, defaults do Vuetify, árvore de locales, scripts.
 
 O rascunho traz a estrutura correta e **`TODO` onde é preciso julgamento**. Sua tarefa é fechar esses `TODO`.
 
-Se o profile sugerido estiver errado, force: `pnpm exec vue-claude-rules init --profile spa`.
+Se o profile sugerido estiver errado, force: `init --profile spa`.
 
-**O projeto é distribuído** — template à venda, boilerplate, entrega a cliente? Use `init --dist`: os scripts passam a usar `npx` avulso e **nenhuma dependência entra no `package.json`**. Um especificador `github:` exige git e rede na máquina de quem instala, e amarra o `install` dele à existência de um repo alheio para sempre. Como `.claude/rules/shared/` é commitado, o agente funciona sem o pacote. Ao empacotar, gere a versão autocontida com `build --standalone` (ver README).
+Ao empacotar um projeto distribuído, gere a versão autocontida do `.claude/` com `build --standalone` (ver README) — a divisão `shared/`/`project/` não faz sentido para quem recebe.
 
 | Profile | Quando |
 |---|---|
@@ -47,6 +56,8 @@ Um projeto que não cabe em nenhum usa lista custom no `package.json`:
 ## Passo 2 — fechar os TODO de `project/`
 
 Esta é a parte que exige você. Leia o código; não invente.
+
+Cada catálogo abre com `<!-- TODO: revisar — rascunho gerado a partir do código -->`. **Apague essa linha quando terminar de revisar o arquivo** — é o visto de que ele deixou de ser rascunho, e o `rules:check` usa isso para saber se a adoção acabou.
 
 ### `catalog-ui.md`
 Para cada componente de `src/components/ui/`, escreva **uma linha do que faz e quando usar**. Props/emits já vieram do código — confira e corrija o que a heurística errou (defaults compostos, props documentadas por comentário). Componente de domínio reutilizado por 2+ views também entra.
@@ -69,18 +80,25 @@ O mais importante e o que o gerador menos consegue inferir:
 
 ## Passo 3 — `CLAUDE.md`
 
-Se já existe, adapte-o ao modelo em `node_modules/vue-claude-rules/templates/CLAUDE.md`: a tabela "Carregar regras conforme o contexto" passa a ter **duas colunas** — princípio (`shared/`) e inventário (`project/`) — e ganha a seção "Regras compartilhadas — como funcionam". Preserve o que for específico do projeto.
+**Se não existia**, o `init` já gerou um, filtrado pelo profile: a tabela lista só regras que existem em `shared/`, e as "regras universais" só as que este projeto pode cumprir. Falta preencher o `TODO` da primeira linha (o que o projeto é).
 
-Só liste linhas de regras que o profile realmente sincronizou (confira `ls .claude/rules/shared/`).
+**Se já existia**, adapte-o: a tabela "Carregar regras conforme o contexto" passa a ter **duas colunas** — princípio (`shared/`) e inventário (`project/`) — mais a seção "Regras compartilhadas — como funcionam". Preserve o que for específico do projeto. Compare com o que o `init` geraria: renomeie o seu, rode `init --force`, e use o gerado como referência.
+
+Só liste regras que o profile realmente sincronizou — confira com `ls .claude/rules/shared/`. Linha apontando para arquivo ausente é pior que linha faltando: manda seguir uma regra que ninguém vai ler.
 
 ## Passo 4 — limpar e verificar
 
 ```bash
-git rm .claude/rules/*.md        # regras antigas soltas, se houver
-pnpm rules:check                 # deve sair 0
-pnpm lint
-pnpm test                        # se houver suíte
+# regras antigas soltas na raiz de .claude/rules/ (adoção sobre um projeto
+# que já tinha regras). Numa adoção nova não há nada aqui — pule.
+ls .claude/rules/*.md 2>/dev/null && git rm .claude/rules/*.md
+
+pnpm rules:check    # falha se sobrar TODO ou placeholder — este é o critério
+pnpm lint           # se houver script
+pnpm test           # se houver suíte
 ```
+
+`rules:check` só sai 0 quando `shared/` está em dia **e** os catálogos não têm mais `TODO`. É deliberado: sincronia sem inventário não é adoção. (`--allow-incomplete` verifica só a sincronia, para CI de projeto já adotado.)
 
 Commite `.claude/rules/shared/` — os arquivos precisam existir para o agente mesmo sem `node_modules`, e cada atualização vira diff revisável no PR.
 

@@ -1,53 +1,79 @@
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { detectStack, inventory, suggestProfile } from './detect.mjs'
+import { detectStack, inventory, looksDistributed, suggestProfile } from './detect.mjs'
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const TODO = '<!-- TODO: revisar — rascunho gerado a partir do código -->'
 
 const readJson = async (path) => JSON.parse(await readFile(path, 'utf8'))
 
+/**
+ * Referenciar uma regra que o profile não sincroniza produz link morto e, pior,
+ * orientação errada — mandar usar `t()` num projeto sem i18n. Tudo que o gerador
+ * escreve passa por aqui: só sobrevive o que existe de fato em shared/.
+ */
+const makeRefs = (syncedRules, catalogs = []) => {
+  const files = new Set(syncedRules.map((r) => r.split('/').pop()))
+  return {
+    catalogs,
+    has: (file) => files.has(file),
+    link: (file) => (files.has(file) ? `\`.claude/rules/shared/${file}\`` : null),
+    /** Junta só as referências vivas; devolve null se nenhuma sobrou. */
+    join: (...candidates) => {
+      const live = candidates.map((f) => (files.has(f) ? `\`.claude/rules/shared/${f}\`` : null)).filter(Boolean)
+      if (!live.length) return null
+      return live.length === 1 ? live[0] : live.slice(0, -1).join(', ') + ' e ' + live.at(-1)
+    },
+  }
+}
+
 const header = (title, sharedRefs) =>
   [
     `# ${title}`,
     '',
-    `> Inventário local. Regras de *como/quando*: ${sharedRefs}.`,
+    sharedRefs ? `> Inventário local. Regras de *como/quando*: ${sharedRefs}.` : '> Inventário local deste projeto.',
     '> **Atualizar no mesmo PR** que muda o código correspondente.',
     '>',
     `> ${TODO}`,
     '',
   ].join('\n')
 
-const buildCatalogUi = (inv, stack) => {
-  const lines = [
-    header('Catálogo de UI do projeto', '`.claude/rules/shared/dry.md` e `.claude/rules/shared/feedback.md`'),
-    '## Componentes de feedback',
-    '',
-    '| Papel | Implementação neste projeto |',
-    '|---|---|',
-  ]
+const buildCatalogUi = (inv, stack, refs) => {
+  const lines = [header('Catálogo de UI do projeto', refs.join('dry.md', 'feedback.md'))]
 
-  const names = inv.components.map((c) => c.name)
-  const composableNames = inv.composables.map((c) => c.name)
-  const findComponent = (needle) => names.find((n) => n.toLowerCase().includes(needle))
+  if (refs.has('feedback.md')) {
+    const names = inv.components.map((c) => c.name)
+    const composableNames = inv.composables.map((c) => c.name)
+    const findComponent = (needle) => names.find((n) => n.toLowerCase().includes(needle))
+    const missing = refs.has('scaffold.md') ? '**não existe** — ver `.claude/rules/shared/scaffold.md`' : '**não existe**'
 
-  lines.push(
-    `| Toast transitório | ${composableNames.includes('useSnackbar') ? '`useSnackbar().showMessage(text, type)`' : '**não existe** — ver `.claude/rules/shared/scaffold.md`'} |`,
-  )
-  lines.push(
-    `| Stack global persistente | ${composableNames.includes('useAlertManager') ? '`useAlertManager` + `GlobalAlertStack`' : '**não existe** — ver `.claude/rules/shared/scaffold.md`'} |`,
-  )
-  lines.push(
-    `| Alerta ancorado a campo/seção | ${findComponent('inlinealert') ? '`InlineAlert`' : '**não existe** — ver `.claude/rules/shared/scaffold.md`'} |`,
-  )
+    lines.push(
+      '## Componentes de feedback',
+      '',
+      '| Papel | Implementação neste projeto |',
+      '|---|---|',
+      `| Toast transitório | ${composableNames.includes('useSnackbar') ? '`useSnackbar().showMessage(text, type)`' : missing} |`,
+      `| Stack global persistente | ${composableNames.includes('useAlertManager') ? '`useAlertManager` + `GlobalAlertStack`' : missing} |`,
+      `| Alerta ancorado a campo/seção | ${findComponent('inlinealert') ? '`InlineAlert`' : missing} |`,
+      '',
+    )
+  }
 
-  lines.push('', '## `src/components/ui/`', '')
+  lines.push('## `src/components/ui/`', '')
 
   if (!inv.components.length) {
-    lines.push('_Nenhum componente em `src/components/ui/`._', '')
+    // Num boilerplate o catálogo vale pelo que orienta, não pelo que lista.
+    lines.push(
+      'Ainda não há componentes em `src/components/ui/`. Esta seção existe para ser preenchida **no mesmo commit** que criar o primeiro.',
+      '',
+      'O critério para um componente morar aqui: o padrão de UI aparece em 2+ lugares, ou o bloco é complexo o bastante para poluir a view. Uso único e simples fica na própria view.',
+      '',
+      'Para cada componente, registre uma linha do que faz e quando usar, mais props/emits/v-model. Quem lê precisa decidir, só por essa linha, se reusa ou cria outro.',
+      '',
+    )
   }
 
   for (const component of inv.components) {
@@ -57,16 +83,16 @@ const buildCatalogUi = (inv, stack) => {
     lines.push('')
   }
 
-  if (stack.apex) {
-    lines.push('> Este projeto usa `vue3-apexcharts` — ver a seção ApexCharts de `shared/vuetify.md`.', '')
+  if (stack.apex && refs.has('vuetify.md')) {
+    lines.push('> Este projeto usa `vue3-apexcharts` — ver a seção ApexCharts de `.claude/rules/shared/vuetify.md`.', '')
   }
 
   return lines.join('\n')
 }
 
-const buildCatalogComposables = (inv) => {
+const buildCatalogComposables = (inv, stack, refs) => {
   const lines = [
-    header('Catálogo de composables e stores do projeto', '`.claude/rules/shared/composables.md`'),
+    header('Catálogo de composables e stores do projeto', refs.link('composables.md')),
     '## Composables — verificar antes de criar novos',
     '',
   ]
@@ -77,7 +103,14 @@ const buildCatalogComposables = (inv) => {
     byScope.get(composable.scope).push(composable.name)
   }
 
-  if (!byScope.size) lines.push('_Nenhum composable em `src/composables/`._', '')
+  if (!byScope.size) {
+    lines.push(
+      'Ainda não há composables em `src/composables/`. Preencher **no mesmo commit** que criar o primeiro.',
+      '',
+      'O critério: lógica reativa usada por 2+ componentes vira composable; estado de um componente só continua `ref` local. Convenção de nome `use{Feature}.js`, agrupado por escopo (`core/`, `auth/`, `{domínio}/`), retornando objeto plano.',
+      '',
+    )
+  }
 
   for (const [scope, items] of byScope) {
     lines.push(`### \`${scope}/\``)
@@ -103,8 +136,14 @@ const buildCatalogComposables = (inv) => {
       const persisted = store.key ? `\`${store.key}\`${store.pick.length ? ` (${store.pick.join(', ')})` : ''}` : 'não'
       lines.push(`| \`${store.name}\` | \`src/${store.path}\` | TODO | ${persisted} |`)
     }
+  } else if (stack.pinia) {
+    lines.push('Pinia está instalado, mas não há store em `src/stores/`. Registrar aqui a primeira que criar, com o que guarda e se é persistida.')
   } else {
-    lines.push('Nenhuma store — o projeto não usa Pinia.')
+    lines.push(
+      '**O projeto não usa Pinia** — e adotá-lo é decisão do dono, não algo a fazer para "seguir o padrão".',
+      '',
+      'Estado global sem Pinia: um `ref` no nível do módulo dentro de um composable resolve a maioria dos casos. Se surgir necessidade de persistir entre sessões, proponha `pinia` + `pinia-plugin-persistedstate` antes de instalar.',
+    )
   }
   lines.push('')
 
@@ -116,13 +155,20 @@ const buildCatalogComposables = (inv) => {
   return lines.join('\n')
 }
 
-const buildCatalogData = (inv) => {
+const buildCatalogData = (inv, stack, refs) => {
   const lines = [
-    header(
-      'Catálogo de dados do projeto (repositories + services)',
-      '`.claude/rules/shared/repositories.md` e `.claude/rules/shared/services.md`',
-    ),
+    header('Catálogo de dados do projeto (repositories + services)', refs.join('repositories.md', 'services.md')),
   ]
+
+  if (!stack.axios && !inv.repositories.length) {
+    lines.push(
+      '**O projeto não consome API própria** — não há axios nem camada de repositories, e as regras correspondentes não estão carregadas.',
+      '',
+      'Se um backend entrar em cena, o caminho é `src/services/api.js` (única instância axios, com os interceptors) → `src/repositories/{domínio}/` (só o mapa de endpoints, sem try/catch) → composables. Registrar aqui cada endpoint no mesmo commit que o criar.',
+      '',
+    )
+    return lines.join('\n')
+  }
 
   lines.push('## Repositories existentes', '')
   if (inv.repositories.length) {
@@ -164,7 +210,7 @@ const buildCatalogData = (inv) => {
   return lines.join('\n')
 }
 
-const buildStack = (inv, stack, pkg, profile) => {
+const buildStack = (inv, stack, pkg, profile, refs) => {
   const lines = [
     header('Configuração da stack deste projeto', 'as regras de `.claude/rules/shared/`'),
     '## O que este projeto é',
@@ -198,7 +244,7 @@ const buildStack = (inv, stack, pkg, profile) => {
     if (persistsSession) {
       lines.push(
         '',
-        '> ⚠️ **Atenção:** há credencial de sessão persistida em `localStorage`. `shared/composables.md` diz que isso não deve acontecer (access token em memória + refresh em cookie HttpOnly). Ou corrija, ou documente aqui por que este projeto diverge de propósito.',
+        `> ⚠️ **Atenção:** há credencial de sessão persistida em \`localStorage\`.${refs.has('composables.md') ? ' `.claude/rules/shared/composables.md` diz que isso não deve acontecer' : ' O padrão é isso não acontecer'} (access token em memória + refresh em cookie HttpOnly). Ou corrija, ou documente aqui por que este projeto diverge de propósito. Confira se não é falso positivo — um campo como \`pendingInviteToken\` casa a heurística sem ser credencial de sessão.`,
       )
     }
   } else {
@@ -206,11 +252,27 @@ const buildStack = (inv, stack, pkg, profile) => {
   }
   lines.push('')
 
-  if (inv.vuetifyDefaults.length) {
+  // `shared/vuetify.md` promete que a tabela de defaults está aqui — se o bloco
+  // não for encontrado, a promessa vira link morto. Melhor pedir explicitamente.
+  if (stack.vuetify) {
     lines.push('## Defaults de componentes (`src/plugins/vuetify.js`)', '')
-    lines.push('| Componente | Defaults aplicados |', '|---|---|')
-    for (const entry of inv.vuetifyDefaults) lines.push(`| \`${entry.name}\` | \`${entry.body}\` |`)
+    if (inv.vuetifyDefaults.length) {
+      lines.push('| Componente | Defaults aplicados |', '|---|---|')
+      for (const entry of inv.vuetifyDefaults) lines.push(`| \`${entry.name}\` | \`${entry.body}\` |`)
+    } else {
+      lines.push(
+        'TODO: nenhum bloco `defaults` foi encontrado no plugin do Vuetify. Ou não existe (e então nada a documentar — apague esta seção), ou está num caminho fora do padrão: copie a tabela à mão.',
+      )
+    }
     lines.push('')
+
+    if (inv.vuetifyThemes.length) {
+      lines.push(
+        `**Temas:** ${inv.vuetifyThemes.map((t) => `\`${t}\``).join(', ')}.` +
+          (inv.vuetifyThemes.length === 1 ? ' Tema único — não construir toggle dark/light por conta própria.' : ''),
+        '',
+      )
+    }
   }
 
   lines.push('## i18n', '')
@@ -223,7 +285,11 @@ const buildStack = (inv, stack, pkg, profile) => {
       lines.push('', '```', ...inv.localeFiles.map((f) => `src/${f}`), '```')
     }
   } else {
-    lines.push('O projeto **não usa vue-i18n** — `shared/i18n.md` não se aplica (texto direto no template é o correto).')
+    lines.push(
+      `O projeto **não usa vue-i18n**${refs.has('i18n.md') ? ' — `.claude/rules/shared/i18n.md` não se aplica' : ''}: texto direto no template é o correto aqui.`,
+      '',
+      'Internacionalizar é decisão de produto, com custo de manutenção permanente. Não instalar vue-i18n nem criar `src/locales/` por conta própria — proponha, se fizer sentido.',
+    )
   }
   lines.push('')
 
@@ -235,19 +301,94 @@ const buildStack = (inv, stack, pkg, profile) => {
 
   lines.push('## Testes', '')
   if (stack.vitest) {
-    lines.push('- Vitest presente. **Onde o gate roda de fato** (CI ou script de build): TODO — ver `shared/tests.md`.')
+    lines.push(
+      `- Vitest presente. **Onde o gate roda de fato** (CI ou script de build): TODO${refs.has('tests.md') ? ' — ver `.claude/rules/shared/tests.md`' : ''}.`,
+    )
     if (stack.cypress) lines.push('- Cypress presente. Config, specs e cobertura atual: TODO.')
     if (stack.playwright) lines.push('- Playwright presente. Config, specs e cobertura atual: TODO.')
   } else {
     lines.push(
-      `**Não há suíte de teste** — por isso o profile é \`${profile}\` e \`shared/tests.md\` não é carregado.`,
+      `**Não há suíte de teste** — por isso o profile é \`${profile}\` e a regra de testes não é carregada.`,
       '',
-      'Não crie a primeira suíte, o config nem job de CI por conta própria (ver o preâmbulo de escopo de `shared/tests.md`). Se fizer sentido, proponha antes.',
+      'Não crie a primeira suíte, o config nem job de CI por conta própria. Adotar testes é decisão do dono do projeto, com custo de manutenção real — proponha antes.',
     )
   }
   lines.push('')
 
   return lines.join('\n')
+}
+
+/**
+ * O CLAUDE.md é a porta de entrada: copiá-lo do template entrega placeholders e,
+ * pior, linhas apontando para regras que o profile não sincroniza — mandando usar
+ * `t()` num projeto sem i18n. Tudo aqui sai do profile + da stack detectada.
+ */
+const buildClaudeMd = (pkg, stack, refs, profile, distMode) => {
+  const name = pkg.name ?? 'Projeto'
+  const uiLib = stack.vuetify ? 'Vuetify' : 'a lib de UI'
+
+  const stackLines = ['- **Components**: Vue 3 `<script setup>`' + (stack.vuetify ? ' + Vuetify' : '')]
+  if (stack.pinia) stackLines.push('- **State**: Pinia + composables para lógica de domínio')
+  if (stack.axios) stackLines.push('- **HTTP**: `src/services/api.js` → repositories → services → composables/views')
+  if (stack.i18n) stackLines.push('- **i18n**: Todo texto via `t()` — `src/locales/**/*.json`')
+  if (stack.vitest) stackLines.push('- **Testes**: Vitest')
+
+  const rows = [
+    ['Criar/editar componentes `.vue`, props, emits, template', 'vue.md', 'catalog-ui.md'],
+    ['Reutilização de UI, evitar duplicação, extrair componentes', 'dry.md', 'catalog-ui.md'],
+    ['Feedback ao usuário: toast, alerta persistente, inline', 'feedback.md', 'catalog-ui.md'],
+    [`Cores, tokens de tema, layout mobile, componentes ${uiLib}`, 'vuetify.md', 'stack.md'],
+    ['Composables, stores, lógica compartilhada', 'composables.md', 'catalog-composables.md'],
+    ['Services (`useAsync` wrappers), service vs composable', 'services.md', 'catalog-data.md'],
+    ['Chamadas HTTP, repositories, camada de API', 'repositories.md', 'catalog-data.md'],
+    ['Texto visível ao usuário, chaves de tradução, locales', 'i18n.md', 'stack.md'],
+    ['Escrever/editar testes, localização dos `.test`, mocks', 'tests.md', 'stack.md'],
+    ['Adotar uma primitiva que a regra exige (`useAsync`, toast…)', 'scaffold.md', 'catalog-composables.md'],
+  ]
+    .filter(([, rule]) => refs.has(rule))
+    .map(([task, rule, catalog]) => [task, rule, refs.catalogs.includes(catalog) ? catalog : 'stack.md'])
+
+  // Só entra a regra universal que o projeto pode de fato cumprir.
+  const universal = ['- Sempre `<script setup>` — sem Options API, sem `export default {}`']
+  if (stack.i18n) universal.push("- Nenhuma string hardcoded em templates — usar `t('chave')`")
+  if (stack.vuetify) universal.push('- Nenhuma cor hardcoded — usar `rgb(var(--v-theme-*))` ou classes do tema')
+  if (stack.axios) universal.push('- Nunca chamar axios diretamente em componentes ou views — sempre via repository')
+  universal.push(
+    `- Verificar o que já existe antes de criar componente, composable${stack.i18n ? ' ou chave de tradução' : ''}`,
+  )
+
+  const syncCmd = distMode ? 'pnpm rules:sync' : 'pnpm rules:sync'
+
+  return [
+    `# ${name}`,
+    '',
+    'TODO: uma linha sobre o que este projeto é.',
+    '',
+    '## Stack',
+    ...stackLines,
+    '',
+    '## Carregar regras conforme o contexto da tarefa',
+    '',
+    '`shared/` é sincronizado do upstream (**não editar**). `project/` é o inventário deste repositório.',
+    '',
+    '| Tarefa envolve | Princípio (shared) | Inventário (project) |',
+    '|---|---|---|',
+    ...rows.map(([task, rule, catalog]) => `| ${task} | \`.claude/rules/shared/${rule}\` | \`.claude/rules/project/${catalog}\` |`),
+    '',
+    `> Profile \`${profile}\` — as regras fora dele não são carregadas de propósito, porque este projeto não pratica o que elas exigem. Ver \`.claude/rules/project/stack.md\`.`,
+    '',
+    '## Regras universais (sempre aplicar)',
+    ...universal,
+    '',
+    '## Regras compartilhadas — como funcionam',
+    '',
+    `- \`.claude/rules/shared/\` é **gerado** por \`${syncCmd}\`. Editar ali é perda garantida no próximo sync.`,
+    '- Mudou um **princípio** (vale para todos os projetos) → PR no upstream, sobe a versão, sincroniza aqui.',
+    '- Mudou o **inventário** (componente novo, composable novo, endpoint novo) → editar `.claude/rules/project/` **no mesmo PR** da mudança de código. Catálogo desatualizado faz o agente duplicar código que já existe.',
+    '- **Precedência:** em conflito, `project/` vence `shared/` — divergir é permitido, mas a divergência tem que estar escrita.',
+    '- Versão em vigor: `.claude/rules/.rules-version` · `pnpm rules:check` acusa edição manual, versão defasada ou adoção incompleta.',
+    '',
+  ].join('\n')
 }
 
 const isPristineTemplate = async (path) => {
@@ -267,6 +408,15 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
   const own = await readJson(join(PKG_ROOT, 'package.json'))
   const stack = detectStack(pkg)
   const profile = profileOverride ?? suggestProfile(stack)
+
+  const profilePath = join(PKG_ROOT, 'profiles', `${profile}.json`)
+  if (!existsSync(profilePath)) {
+    const available = (await readdir(join(PKG_ROOT, 'profiles'))).map((f) => f.replace('.json', ''))
+    console.error(`[init] profile "${profile}" não existe. Disponíveis: ${available.join(', ')}`)
+    process.exit(1)
+  }
+  const profileDef = await readJson(profilePath)
+  const refs = makeRefs([...profileDef.rules, 'scaffold.md'], profileDef.catalogs ?? [])
 
   const detected = Object.entries(stack)
     .filter(([, present]) => present)
@@ -308,14 +458,21 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
   const projectDir = join(cwd, '.claude', 'rules', 'project')
   await mkdir(projectDir, { recursive: true })
 
-  const drafts = inv
+  // Só os catálogos que o profile declara — o sync semeia exatamente esses, e
+  // gerar a mais deixa arquivo órfão que o CLAUDE.md não referencia.
+  const allDrafts = inv
     ? {
-        'catalog-ui.md': buildCatalogUi(inv, stack),
-        'catalog-composables.md': buildCatalogComposables(inv),
-        'catalog-data.md': buildCatalogData(inv),
-        'stack.md': buildStack(inv, stack, pkg, profile),
+        'catalog-ui.md': () => buildCatalogUi(inv, stack, refs),
+        'catalog-composables.md': () => buildCatalogComposables(inv, stack, refs),
+        'catalog-data.md': () => buildCatalogData(inv, stack, refs),
+        'stack.md': () => buildStack(inv, stack, pkg, profile, refs),
       }
     : {}
+  const drafts = Object.fromEntries(
+    Object.entries(allDrafts)
+      .filter(([name]) => refs.catalogs.includes(name))
+      .map(([name, make]) => [name, make()]),
+  )
 
   const written = []
   const skipped = []
@@ -330,15 +487,36 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
   }
 
   if (written.length) console.log(`[init] project/ rascunhado do código: ${written.join(', ')}`)
-  if (skipped.length) console.log(`[init] project/ preservado (já preenchido): ${skipped.join(', ')}`)
+  if (skipped.length) {
+    // "Preservado" já significou só "o arquivo existe" — dizer "já preenchido"
+    // sobre um arquivo cheio de TODO é sinal de conclusão falso.
+    const withTodo = []
+    for (const name of skipped) {
+      const content = await readFile(join(projectDir, name), 'utf8')
+      if (/\bTODO\b/.test(content)) withTodo.push(name)
+    }
+    console.log(`[init] project/ preservado (não sobrescrito): ${skipped.join(', ')}`)
+    if (withTodo.length) console.log(`[init] ⚠️  ainda com TODO pendente: ${withTodo.join(', ')}`)
+  }
   if (!inv) console.log('[init] sem src/ — catálogos não rascunhados')
 
   const claudeMd = join(cwd, 'CLAUDE.md')
   const claudeMdExists = existsSync(claudeMd)
   if (!claudeMdExists) {
-    const template = await readFile(join(PKG_ROOT, 'templates', 'CLAUDE.md'), 'utf8')
-    await writeFile(claudeMd, template, 'utf8')
-    console.log('[init] CLAUDE.md criado a partir do template')
+    await writeFile(claudeMd, buildClaudeMd(pkg, stack, refs, profile, standalone), 'utf8')
+    console.log(`[init] CLAUDE.md gerado para o profile ${profile} (só as regras que existem em shared/)`)
+  } else {
+    console.log('[init] CLAUDE.md já existe — não tocado')
+  }
+
+  if (!distMode && !alreadyNpx) {
+    const signals = await looksDistributed(cwd, pkg, inv)
+    if (signals.length) {
+      console.log('')
+      console.log(`[init] ⚠️  este projeto parece distribuído (${signals.join('; ')}).`)
+      console.log('   Se for template/boilerplate entregue a terceiros, rode `init --dist`:')
+      console.log('   a devDependency `github:` amarra o install de quem recebe ao seu repo.')
+    }
   }
 
   console.log('')

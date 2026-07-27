@@ -228,14 +228,49 @@ export const inventory = async (cwd) => {
     .map((f) => rel(src, f))
     .sort()
 
-  const vuetifyPlugin = await read(join(src, 'plugins', 'vuetify.js'))
-  const defaultsBlock = vuetifyPlugin?.match(/defaults:\s*\{([\s\S]*?)\n\s{2}\},?\n/)?.[1] ?? null
-  const vuetifyDefaults = defaultsBlock
-    ? [...defaultsBlock.matchAll(/^\s*(V\w+):\s*\{([\s\S]*?)\},?\s*$/gm)].map(([, name, body]) => ({
-        name,
-        body: body.replace(/\s*\/\/[^\n]*/g, '').replace(/\s+/g, ' ').replace(/,\s*$/, '').trim(),
-      }))
-    : []
+  // O plugin pode estar em vários lugares e com indentação qualquer — por isso
+  // o bloco `defaults` é lido com balanceamento, não por regex de indentação.
+  const vuetifyPlugin =
+    (await read(join(src, 'plugins', 'vuetify.js'))) ??
+    (await read(join(src, 'plugins', 'vuetify', 'index.js'))) ??
+    (await read(join(src, 'plugins', 'vuetify.ts'))) ??
+    null
+
+  let vuetifyDefaults = []
+  let vuetifyThemes = []
+  if (vuetifyPlugin) {
+    const start = vuetifyPlugin.search(/defaults\s*:\s*\{/)
+    if (start !== -1) {
+      const block = readBalanced(vuetifyPlugin, vuetifyPlugin.indexOf('{', start))
+      if (block) {
+        const namePattern = /(?:^|\n)\s*(V\w+)\s*:\s*\{/g
+        let match
+        while ((match = namePattern.exec(block)) !== null) {
+          const bodyStart = block.indexOf('{', match.index + match[0].length - 1)
+          const body = readBalanced(block, bodyStart)
+          if (body === null) continue
+          vuetifyDefaults.push({
+            name: match[1],
+            body: body
+              .replace(/\/\*[\s\S]*?\*\//g, '')
+              .replace(/\s*\/\/[^\n]*/g, '')
+              .replace(/\s+/g, ' ')
+              .replace(/,\s*$/, '')
+              .trim(),
+          })
+          namePattern.lastIndex = bodyStart + body.length
+        }
+      }
+    }
+
+    const themeStart = vuetifyPlugin.search(/themes\s*:\s*\{/)
+    if (themeStart !== -1) {
+      const block = readBalanced(vuetifyPlugin, vuetifyPlugin.indexOf('{', themeStart))
+      if (block) vuetifyThemes = [...block.matchAll(/(?:^|\n)\s*(\w+)\s*:\s*\{/g)].map(([, n]) => n)
+    }
+    const defaultTheme = vuetifyPlugin.match(/defaultTheme\s*:\s*['"](\w+)['"]/)?.[1] ?? null
+    if (defaultTheme) vuetifyThemes = [...new Set([defaultTheme, ...vuetifyThemes])]
+  }
 
   const apiSource = await read(join(src, 'services', 'api.js'))
   const api = apiSource
@@ -259,6 +294,29 @@ export const inventory = async (cwd) => {
     locales,
     localeFiles,
     vuetifyDefaults,
+    vuetifyThemes,
     api,
+    views: (await listFiles(join(src, 'views'), (n) => n.endsWith('.vue'))).length,
   }
+}
+
+/**
+ * Sinais de que o repositório é distribuído (boilerplate, template à venda,
+ * starter). Errar isso custa caro: a devDependency `github:` amarra o install
+ * de quem recebe a um repo alheio — melhor avisar do que deixar descobrir.
+ */
+export const looksDistributed = async (cwd, pkg, inv) => {
+  const reasons = []
+  const name = `${pkg.name ?? ''}`
+  if (/\b(kit|template|starter|boilerplate|skeleton|scaffold)\b/i.test(name)) {
+    reasons.push(`nome do pacote ("${pkg.name}")`)
+  }
+  const readme = (await read(join(cwd, 'README.md'))) ?? ''
+  if (/\b(template|boilerplate|starter|projeto base|ponto de partida|para iniciar)\b/i.test(readme)) {
+    reasons.push('README descreve um ponto de partida')
+  }
+  if (inv && inv.views <= 2 && !inv.repositories.length) {
+    reasons.push('poucas views e nenhuma camada de API')
+  }
+  return reasons
 }

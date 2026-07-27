@@ -24,6 +24,7 @@ const VERSION_FILE = join(CWD, '.claude', 'rules', '.rules-version')
 
 const args = process.argv.slice(2)
 const checkOnly = args.includes('--check')
+const allowIncomplete = args.includes('--allow-incomplete')
 const flagIndex = args.indexOf('--profile')
 const cliProfile = flagIndex !== -1 ? args[flagIndex + 1] : null
 
@@ -123,6 +124,42 @@ const main = async () => {
       console.error('[rules] rode: pnpm rules:sync')
       process.exit(1)
     }
+
+    // Sincronia sozinha não é adoção. Um `ok` com catálogo cheio de TODO é um
+    // sinal de conclusão falso para um agente com pressa — e o critério de
+    // sucesso do ADOPTING.md é justamente este comando.
+    if (!allowIncomplete) {
+      const pending = []
+      const scan = async (path, label) => {
+        if (!existsSync(path)) return
+        const content = await readFile(path, 'utf8')
+        const todos = content.match(/\bTODO\b/g)?.length ?? 0
+        const placeholders = content.match(/\{[A-Za-zÀ-ú][^}\n]{2,30}\}/g)?.length ?? 0
+        if (todos || placeholders) {
+          pending.push(
+            `${label}: ${[todos && `${todos} TODO`, placeholders && `${placeholders} placeholder`].filter(Boolean).join(', ')}`,
+          )
+        }
+      }
+
+      if (existsSync(PROJECT_DIR)) {
+        for (const file of (await readdir(PROJECT_DIR)).filter((f) => f.endsWith('.md'))) {
+          await scan(join(PROJECT_DIR, file), `project/${file}`)
+        }
+      }
+      await scan(join(CWD, 'CLAUDE.md'), 'CLAUDE.md')
+
+      if (pending.length) {
+        console.error(`[rules] shared/ em dia (${profileName} @ v${version}), mas a ADOÇÃO ESTÁ INCOMPLETA:`)
+        pending.forEach((p) => console.error(`  - ${p}`))
+        console.error('')
+        console.error('[rules] o inventário é o produto da adoção — catálogo com TODO faz o agente')
+        console.error('[rules] duplicar código que já existe. Preencha lendo o src/.')
+        console.error('[rules] (use --allow-incomplete para checar só a sincronia)')
+        process.exit(1)
+      }
+    }
+
     console.log(`[rules] ok — ${profileName} @ v${version}`)
     return
   }
