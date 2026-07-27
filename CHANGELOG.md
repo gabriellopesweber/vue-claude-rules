@@ -2,6 +2,15 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.3.1 — 2026-07-27
+
+### Corrigido
+- **`init` reintroduzia a devDependency num projeto distribuído.** Rodar `init` no Velox — que a tinha removido de propósito — trazia de volta o `github:` que quebraria o `install` de todo comprador. Agora o `init` detecta scripts baseados em `npx` e preserva o modo; `--dist` força explicitamente.
+
+### Adicionado
+- **`init --dist`** — modo distribuição: scripts via `npx`, sem devDependency, e `rules:dist` já configurado.
+- **Aviso de conclusão para agentes.** "Instalar" este pacote não é `pnpm add`: o valor está nos catálogos preenchidos, e um agente que pare no passo 1 não entregou nada. O README abre com um bloco endereçado ao agente, o `init` termina avisando que a adoção **não** está completa, e o `ADOPTING.md` pede que o que ficou em aberto seja relatado em vez de dado por encerrado.
+
 ## v1.3.0 — 2026-07-27
 
 Um projeto **distribuído** (template à venda, boilerplate, entrega a cliente) não pode carregar a divisão `shared/`/`project/`: ela pressupõe um upstream que quem recebe não tem. Pior, virar `devDependency` amarra o `pnpm install` de todo comprador à existência de um repo pessoal, e exige git e rede na máquina dele.

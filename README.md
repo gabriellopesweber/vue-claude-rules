@@ -2,6 +2,12 @@
 
 Regras de Claude Code compartilhadas entre projetos Vue 3 + Vuetify + Pinia.
 
+> ## 🤖 Agente de código lendo isto
+>
+> **Instalar este pacote não é `pnpm add`.** Ele adiciona um processo de adoção ao repositório: sincronizar as regras, inventariar o `src/` em catálogos e reescrever o `CLAUDE.md`. Um `pnpm add` sozinho não entrega nada — os catálogos ficam vazios e o agente seguinte não ganha nada.
+>
+> **Siga [`ADOPTING.md`](ADOPTING.md) do início ao fim** antes de reportar a tarefa como concluída. São 4 passos; o `init` automatiza o primeiro e marca com `TODO` o que depende de você ler o código.
+
 ## O problema que resolve
 
 Regras copiadas entre repositórios divergem em silêncio: uma melhoria de padrão fica presa num projeto, enquanto o inventário de componentes de um vaza para o outro e faz o agente sugerir código que não existe ali.

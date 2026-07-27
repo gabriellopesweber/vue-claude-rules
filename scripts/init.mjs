@@ -256,7 +256,7 @@ const isPristineTemplate = async (path) => {
   return content.includes('{NomeDoComponente}') || content.includes('{prefixo}') || content.includes('{domínio}')
 }
 
-export const runInit = async ({ cwd, force = false, profileOverride = null }) => {
+export const runInit = async ({ cwd, force = false, profileOverride = null, distMode = false }) => {
   const pkgPath = join(cwd, 'package.json')
   if (!existsSync(pkgPath)) {
     console.error('[init] package.json não encontrado. Rode na raiz do projeto.')
@@ -275,13 +275,34 @@ export const runInit = async ({ cwd, force = false, profileOverride = null }) =>
   console.log(`[init] profile: ${profile}${profileOverride ? ' (forçado)' : ' (sugerido)'}`)
 
   pkg.scripts ??= {}
-  pkg.scripts['rules:sync'] ??= 'node node_modules/vue-claude-rules/scripts/sync.mjs'
-  pkg.scripts['rules:check'] ??= 'node node_modules/vue-claude-rules/scripts/sync.mjs --check'
   pkg.devDependencies ??= {}
-  pkg.devDependencies['vue-claude-rules'] ??= `github:gabriellopesweber/vue-claude-rules#v${own.version}`
+
+  // Projeto distribuído (template à venda, boilerplate, entrega a cliente) não pode
+  // ter este pacote como dependência: amarra o install de quem recebe à existência
+  // de um repo alheio, e exige git na máquina dele. Como shared/ é commitado, o
+  // agente funciona sem o pacote — só a atualização precisa dele, via npx avulso.
+  const alreadyNpx = /npx/.test(pkg.scripts['rules:sync'] ?? '')
+  const standalone = distMode || alreadyNpx
+
+  if (standalone) {
+    delete pkg.devDependencies['vue-claude-rules']
+    const base = `npx -y github:gabriellopesweber/vue-claude-rules#v${own.version}`
+    pkg.scripts['rules:sync'] = `${base} sync`
+    pkg.scripts['rules:check'] = `${base} sync --check`
+    pkg.scripts['rules:dist'] ??= `${base} build --standalone --out dist-claude/.claude`
+  } else {
+    pkg.scripts['rules:sync'] ??= 'node node_modules/vue-claude-rules/scripts/sync.mjs'
+    pkg.scripts['rules:check'] ??= 'node node_modules/vue-claude-rules/scripts/sync.mjs --check'
+    pkg.devDependencies['vue-claude-rules'] ??= `github:gabriellopesweber/vue-claude-rules#v${own.version}`
+  }
+
   pkg.claudeRules = { ...pkg.claudeRules, profile }
   await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8')
-  console.log('[init] package.json: scripts, devDependency e claudeRules.profile')
+  console.log(
+    standalone
+      ? '[init] package.json: scripts via npx, sem devDependency (modo distribuição)'
+      : '[init] package.json: scripts, devDependency e claudeRules.profile',
+  )
 
   const inv = await inventory(cwd)
   const projectDir = join(cwd, '.claude', 'rules', 'project')
@@ -321,6 +342,10 @@ export const runInit = async ({ cwd, force = false, profileOverride = null }) =>
   }
 
   console.log('')
+  console.log('⚠️  A ADOÇÃO NÃO ESTÁ COMPLETA. O init faz só a parte mecânica.')
+  console.log('   Agente: siga node_modules/vue-claude-rules/ADOPTING.md (passos 2 a 4)')
+  console.log('   antes de reportar concluído — catálogo com TODO não serve para nada.')
+  console.log('')
   console.log('Falta fazer (precisa de julgamento, não dá para gerar):')
   let step = 1
   console.log(`  ${step++}. pnpm install && pnpm rules:sync`)
@@ -329,6 +354,5 @@ export const runInit = async ({ cwd, force = false, profileOverride = null }) =>
     console.log(`  ${step++}. Atualizar CLAUDE.md com a tabela de duas colunas (modelo: node_modules/vue-claude-rules/templates/CLAUDE.md)`)
   }
   console.log(`  ${step++}. Apagar as regras antigas soltas em .claude/rules/*.md, se houver`)
-  console.log('')
-  console.log('Se um agente for fazer isso, aponte-o para ADOPTING.md do pacote.')
+  console.log(`  ${step++}. Verificar: pnpm rules:check && pnpm lint`)
 }

@@ -12,7 +12,8 @@ const flag = (name) => {
 const usage = () => {
   console.log(`vue-claude-rules
 
-  init [--profile <nome>] [--force]   detecta a stack, rascunha .claude/rules/project/ e prepara o package.json
+  init [--profile <nome>] [--dist] [--force]
+                                      detecta a stack, rascunha .claude/rules/project/ e prepara o package.json
   sync [--profile <nome>]             copia as regras para .claude/rules/shared/
   sync --check                        falha se shared/ divergir do pacote
   build --standalone [--out <dir>]    gera um .claude/ autocontido para distribuição
@@ -27,6 +28,7 @@ switch (command) {
       cwd: process.cwd(),
       force: rest.includes('--force'),
       profileOverride: flag('profile'),
+      distMode: rest.includes('--dist'),
     })
     break
   case 'sync':

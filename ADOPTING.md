@@ -1,6 +1,8 @@
 # Adotar o vue-claude-rules neste repositório
 
-**Este documento é escrito para um agente de código** (Claude Code ou equivalente) que recebeu a tarefa *"adote o vue-claude-rules neste projeto"*. Siga na ordem. Você não precisa de contexto prévio sobre a biblioteca — está tudo aqui.
+**Este documento é escrito para um agente de código** (Claude Code ou equivalente) que recebeu a tarefa *"instale/adote o vue-claude-rules neste projeto"*. Siga na ordem. Você não precisa de contexto prévio sobre a biblioteca — está tudo aqui.
+
+> **Antes de começar:** a tarefa não termina no `pnpm add`. O produto desta adoção são os **catálogos preenchidos** — sem eles, o próximo agente que abrir o repositório não ganha nada e vai duplicar código que já existe. Se você parar no passo 1, não fez o trabalho. Ao concluir, relate o que ficou em aberto (por exemplo, um `TODO` que você não conseguiu resolver lendo o código) em vez de dar por encerrado.
 
 ## O que você vai produzir
 
@@ -27,6 +29,8 @@ O `init` detecta a stack (pinia/axios/vue-i18n/vitest/apexcharts), escolhe o pro
 O rascunho traz a estrutura correta e **`TODO` onde é preciso julgamento**. Sua tarefa é fechar esses `TODO`.
 
 Se o profile sugerido estiver errado, force: `pnpm exec vue-claude-rules init --profile spa`.
+
+**O projeto é distribuído** — template à venda, boilerplate, entrega a cliente? Use `init --dist`: os scripts passam a usar `npx` avulso e **nenhuma dependência entra no `package.json`**. Um especificador `github:` exige git e rede na máquina de quem instala, e amarra o `install` dele à existência de um repo alheio para sempre. Como `.claude/rules/shared/` é commitado, o agente funciona sem o pacote. Ao empacotar, gere a versão autocontida com `build --standalone` (ver README).
 
 | Profile | Quando |
 |---|---|
