@@ -60,29 +60,46 @@ git add .claude/rules && git commit -m "chore: rules v1.1.0"
 
 Definem qual subconjunto de regras cada tipo de projeto carrega.
 
-| Profile | Para | Regras |
-|---|---|---|
-| `spa-full` | SPA com backend **e** suíte de teste | 9 |
-| `spa` | SPA com backend, sem testes | 8 |
-| `site` | Site/landing com i18n, sem backend nem estado global | 4 |
-| `minimal` | Vue + Vuetify apenas | 3 |
-
-Selecione via `claudeRules.profile` no `package.json` ou `--profile <nome>`.
-
-**Regra do profile: só inclua regra que o projeto realmente pratica.** `core/tests.md` descreve como testar bem *onde já se testa* — num projeto sem suíte ela vira pressão para o agente criar testes que ninguém pediu. Mesmo raciocínio para `i18n.md` sem vue-i18n, `repositories.md`/`services.md` sem backend, `feedback.md` sem stack de alertas. Profile enxuto é feature, não falta.
-
-Cada regra condicional carrega um **preâmbulo de escopo** dizendo o que pressupõe e o que fazer quando não existe — rede de segurança para quando o profile estiver errado.
-
-### Lista custom
-
-Projeto raramente cabe exatamente num bundle. `claudeRules.rules` vence o profile:
+A seleção é **granular**: você escolhe as regras, uma por uma. Nenhum projeto cabe exatamente num bundle pronto — um one-page com i18n e testes não é "site" nem "SPA completa".
 
 ```jsonc
-"claudeRules": {
-  "rules": ["core/dry.md", "core/tests.md", "vue/vue.md", "vuetify/vuetify.md", "i18n/i18n.md"],
-  "catalogs": ["catalog-ui.md", "stack.md"]
-}
+"claudeRules": { "rules": ["vue", "dry", "vuetify", "i18n", "tests"] }
 ```
+
+```bash
+npx vue-claude-rules list   # o catálogo, a qualquer momento
+```
+
+| id | Cobre | Pressupõe |
+|---|---|---|
+| `vue` | `<script setup>`, ordem de imports, props/emits/v-model, camadas, nomenclatura | — |
+| `dry` | reuso primeiro, quando extrair componente, checklist, anti-padrões | — |
+| `vuetify` | tokens de tema, props descontinuadas, defaults, mobile, ApexCharts | `vuetify` |
+| `feedback` | toast, alerta persistente e inline — qual usar em cada caso | — |
+| `i18n` | estrutura JSON, nomenclatura de chaves, interpolação, proibições | `vue-i18n` |
+| `composables` | Pinia + persist, global vs view-scoped, Orquestrador + Filiações, validação | — |
+| `services` | service vs composable, padrão `useAsync`, onde cada um mora | `axios` |
+| `repositories` | toda chamada HTTP via repository, estrutura, tratamento de erros | `axios` |
+| `tests` | FIRST, pirâmide, 4 pilares, test doubles, co-localização, E2E | `vitest` |
+
+Os **catálogos** de `.claude/rules/project/` são derivados das regras escolhidas — não precisa listá-los.
+
+**Só inclua regra que o projeto realmente pratica.** `tests` descreve como testar bem *onde já se testa*; num projeto sem suíte, vira pressão para o agente criar testes que ninguém pediu. Mesmo raciocínio para `i18n` sem vue-i18n e `repositories`/`services` sem backend. Seleção enxuta é feature, não falta. Cada regra condicional carrega um **preâmbulo de escopo** dizendo o que pressupõe — rede de segurança para quando a seleção estiver errada.
+
+O `init` monta essa lista sozinho, a partir das dependências que encontrar. Depois é só editar.
+
+### Presets
+
+Atalho para os casos comuns, via `claudeRules.profile` ou `--profile <nome>`:
+
+| Preset | Regras |
+|---|---|
+| `minimal` | vue, dry, vuetify |
+| `site` | + i18n |
+| `spa` | + feedback, composables, services, repositories |
+| `spa-full` | + tests |
+
+Lista granular vence o preset.
 
 ## scaffold — o código das primitivas
 

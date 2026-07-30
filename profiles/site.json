@@ -1,12 +1,5 @@
 {
   "name": "site",
-  "description": "Site/landing com i18n, sem backend próprio nem estado global. Adicione core/tests.md via claudeRules.rules se houver suíte.",
-  "requires": ["vue-i18n"],
-  "rules": [
-    "core/dry.md",
-    "vue/vue.md",
-    "vuetify/vuetify.md",
-    "i18n/i18n.md"
-  ],
-  "catalogs": ["catalog-ui.md", "stack.md"]
+  "description": "Site/landing com i18n, sem backend nem estado global.",
+  "rules": ["vue", "dry", "vuetify", "i18n"]
 }

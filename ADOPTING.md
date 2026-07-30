@@ -37,7 +37,31 @@ O `init` detecta a stack (pinia/axios/vue-i18n/vitest/apexcharts), escolhe o pro
 
 O rascunho traz a estrutura correta e **`TODO` onde é preciso julgamento**. Sua tarefa é fechar esses `TODO`.
 
-Se o profile sugerido estiver errado, force: `init --profile spa`.
+### A seleção de regras
+
+O `init` monta a lista a partir das dependências que encontrar e a grava em `claudeRules.rules`:
+
+```jsonc
+"claudeRules": { "rules": ["vue", "dry", "vuetify", "i18n", "tests"] }
+```
+
+**Confira essa lista antes de seguir** — é o que define tudo o resto. `npx vue-claude-rules list` mostra o catálogo com o que cada regra cobre e o que pressupõe. Adicione ou remova ids à mão; os catálogos de `project/` são derivados daí.
+
+| id | Cobre | Pressupõe |
+|---|---|---|
+| `vue` | componentes, imports, props/emits, camadas | — |
+| `dry` | reuso, quando extrair componente | — |
+| `vuetify` | tokens de tema, defaults, mobile, ApexCharts | `vuetify` |
+| `feedback` | toast / alerta persistente / inline | — |
+| `i18n` | estrutura de chaves, interpolação, proibições | `vue-i18n` |
+| `composables` | Pinia + persist, view-scoped, orquestrador | — |
+| `services` | service vs composable, `useAsync` | `axios` |
+| `repositories` | HTTP sempre via repository | `axios` |
+| `tests` | FIRST, pirâmide, doubles, co-localização | `vitest` |
+
+**Não inclua regra que o projeto não pratica.** Sem suíte de teste, `tests` fora; sem vue-i18n, `i18n` fora. A regra existe para orientar quem já faz aquilo, não para criar a obrigação.
+
+Presets (`--profile minimal|site|spa|spa-full`) são atalho para os casos comuns — a lista granular vence.
 
 Ao empacotar um projeto distribuído, gere a versão autocontida do `.claude/` com `build --standalone` (ver README) — a divisão `shared/`/`project/` não faz sentido para quem recebe.
 

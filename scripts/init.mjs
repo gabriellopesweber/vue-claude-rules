@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { detectStack, inventory, looksDistributed, suggestProfile } from './detect.mjs'
+import { catalogsFor, loadManifest, missingDeps, resolveRules, rulesForStack } from './manifest.mjs'
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const TODO = '<!-- TODO: revisar — rascunho gerado a partir do código -->'
@@ -323,7 +324,7 @@ const buildStack = (inv, stack, pkg, profile, refs) => {
  * pior, linhas apontando para regras que o profile não sincroniza — mandando usar
  * `t()` num projeto sem i18n. Tudo aqui sai do profile + da stack detectada.
  */
-const buildClaudeMd = (pkg, stack, refs, profile, distMode) => {
+const buildClaudeMd = (pkg, stack, refs, selection, distMode) => {
   const name = pkg.name ?? 'Projeto'
   const uiLib = stack.vuetify ? 'Vuetify' : 'a lib de UI'
 
@@ -375,7 +376,7 @@ const buildClaudeMd = (pkg, stack, refs, profile, distMode) => {
     '|---|---|---|',
     ...rows.map(([task, rule, catalog]) => `| ${task} | \`.claude/rules/shared/${rule}\` | \`.claude/rules/project/${catalog}\` |`),
     '',
-    `> Profile \`${profile}\` — as regras fora dele não são carregadas de propósito, porque este projeto não pratica o que elas exigem. Ver \`.claude/rules/project/stack.md\`.`,
+    `> Regras em uso: ${selection.map((r) => `\`${r.id}\``).join(', ')}. As demais **não** são carregadas de propósito — este projeto não pratica o que elas exigem. Para ver o catálogo completo e mudar a seleção (\`claudeRules.rules\` no \`package.json\`): \`npx vue-claude-rules list\`.`,
     '',
     '## Regras universais (sempre aplicar)',
     ...universal,
@@ -407,22 +408,58 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
   const pkg = await readJson(pkgPath)
   const own = await readJson(join(PKG_ROOT, 'package.json'))
   const stack = detectStack(pkg)
-  const profile = profileOverride ?? suggestProfile(stack)
+  const profile = profileOverride ?? pkg.claudeRules?.profile ?? suggestProfile(stack)
 
-  const profilePath = join(PKG_ROOT, 'profiles', `${profile}.json`)
-  if (!existsSync(profilePath)) {
-    const available = (await readdir(join(PKG_ROOT, 'profiles'))).map((f) => f.replace('.json', ''))
-    console.error(`[init] profile "${profile}" não existe. Disponíveis: ${available.join(', ')}`)
-    process.exit(1)
+  const manifest = await loadManifest()
+  const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies })
+
+  // Sem `--profile`, a seleção é granular: cada regra entra porque o projeto tem
+  // a dependência que ela pressupõe. Bucket pronto raramente casa — um one-page
+  // com i18n e testes não é `site` nem `spa-full`.
+  let selection
+  let selectionLabel
+  if (profileOverride) {
+    const profilePath = join(PKG_ROOT, 'profiles', `${profileOverride}.json`)
+    if (!existsSync(profilePath)) {
+      const available = (await readdir(join(PKG_ROOT, 'profiles'))).map((f) => f.replace('.json', ''))
+      console.error(`[init] preset "${profileOverride}" não existe. Disponíveis: ${available.join(', ')}`)
+      process.exit(1)
+    }
+    const profileDef = await readJson(profilePath)
+    const resolved = resolveRules(manifest, profileDef.rules)
+    selection = resolved.rules
+    selectionLabel = `preset ${profileOverride}`
+  } else if (Array.isArray(pkg.claudeRules?.rules) && pkg.claudeRules.rules.length) {
+    const resolved = resolveRules(manifest, pkg.claudeRules.rules)
+    if (resolved.unknown.length) {
+      console.error(`[init] regra desconhecida no package.json: ${resolved.unknown.join(', ')}`)
+      console.error('[init] veja o catálogo: npx vue-claude-rules list')
+      process.exit(1)
+    }
+    selection = resolved.rules
+    selectionLabel = 'claudeRules.rules do package.json'
+  } else if (pkg.claudeRules?.profile) {
+    const profilePath = join(PKG_ROOT, 'profiles', `${pkg.claudeRules.profile}.json`)
+    const profileDef = await readJson(profilePath)
+    selection = resolveRules(manifest, profileDef.rules).rules
+    selectionLabel = `preset ${pkg.claudeRules.profile} (já no package.json)`
+  } else {
+    selection = rulesForStack(manifest, stack)
+    selectionLabel = 'derivado da stack'
   }
-  const profileDef = await readJson(profilePath)
-  const refs = makeRefs([...profileDef.rules, 'scaffold.md'], profileDef.catalogs ?? [])
+
+  const catalogs = catalogsFor(selection)
+  const refs = makeRefs([...selection.map((r) => r.path), 'scaffold.md'], catalogs)
 
   const detected = Object.entries(stack)
     .filter(([, present]) => present)
     .map(([name]) => name)
   console.log(`[init] detectado: ${detected.join(', ') || 'nada além de vue'}`)
-  console.log(`[init] profile: ${profile}${profileOverride ? ' (forçado)' : ' (sugerido)'}`)
+  console.log(`[init] regras (${selectionLabel}): ${selection.map((r) => r.id).join(', ')}`)
+
+  for (const { rule, absent } of missingDeps(selection, deps)) {
+    console.log(`[init] ⚠️  regra "${rule.id}" pressupõe ${absent.join(', ')}, que não está instalado`)
+  }
 
   pkg.scripts ??= {}
   pkg.devDependencies ??= {}
@@ -446,12 +483,20 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
     pkg.devDependencies['vue-claude-rules'] ??= `github:gabriellopesweber/vue-claude-rules#v${own.version}`
   }
 
-  pkg.claudeRules = { ...pkg.claudeRules, profile }
+  // Grava a lista granular, que é editável à mão depois (`npx vue-claude-rules
+  // list` mostra os ids). Preset explícito continua gravado como `profile`, e
+  // uma configuração que já existe não é convertida sem pedirem.
+  if (profileOverride) {
+    pkg.claudeRules = { profile: profileOverride }
+  } else if (!pkg.claudeRules?.rules && !pkg.claudeRules?.profile) {
+    pkg.claudeRules = { rules: selection.map((r) => r.id) }
+  }
+
   await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8')
   console.log(
     standalone
       ? '[init] package.json: scripts via npx, sem devDependency (modo distribuição)'
-      : '[init] package.json: scripts, devDependency e claudeRules.profile',
+      : '[init] package.json: scripts, devDependency e claudeRules',
   )
 
   const inv = await inventory(cwd)
@@ -503,8 +548,8 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
   const claudeMd = join(cwd, 'CLAUDE.md')
   const claudeMdExists = existsSync(claudeMd)
   if (!claudeMdExists) {
-    await writeFile(claudeMd, buildClaudeMd(pkg, stack, refs, profile, standalone), 'utf8')
-    console.log(`[init] CLAUDE.md gerado para o profile ${profile} (só as regras que existem em shared/)`)
+    await writeFile(claudeMd, buildClaudeMd(pkg, stack, refs, selection, standalone), 'utf8')
+    console.log('[init] CLAUDE.md gerado — tabela e regras universais filtradas pelas regras em uso')
   } else {
     console.log('[init] CLAUDE.md já existe — não tocado')
   }

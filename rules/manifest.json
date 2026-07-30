@@ -1,0 +1,77 @@
+{
+  "$comment": "Fonte única de verdade sobre as regras disponíveis. Usado por `list`, pelos profiles, pela resolução de nomes e pela validação. Adicionar regra = adicionar entrada aqui.",
+  "rules": [
+    {
+      "id": "vue",
+      "path": "vue/vue.md",
+      "title": "Componentes Vue",
+      "summary": "script setup, ordem de imports, props/emits/v-model, camadas, nomenclatura",
+      "requires": [],
+      "catalogs": []
+    },
+    {
+      "id": "dry",
+      "path": "core/dry.md",
+      "title": "Reuso e DRY",
+      "summary": "reuso primeiro, quando extrair componente, checklist, anti-padrões",
+      "requires": [],
+      "catalogs": ["catalog-ui.md"]
+    },
+    {
+      "id": "vuetify",
+      "path": "vuetify/vuetify.md",
+      "title": "Vuetify",
+      "summary": "tokens de tema, props descontinuadas, defaults, mobile, ApexCharts",
+      "requires": ["vuetify"],
+      "catalogs": ["stack.md"]
+    },
+    {
+      "id": "feedback",
+      "path": "core/feedback.md",
+      "title": "Feedback ao usuário",
+      "summary": "toast, alerta persistente e inline — qual usar em cada caso",
+      "requires": [],
+      "catalogs": ["catalog-ui.md"]
+    },
+    {
+      "id": "i18n",
+      "path": "i18n/i18n.md",
+      "title": "i18n",
+      "summary": "estrutura JSON, nomenclatura de chaves, interpolação, proibições",
+      "requires": ["vue-i18n"],
+      "catalogs": ["stack.md"]
+    },
+    {
+      "id": "composables",
+      "path": "vue/composables.md",
+      "title": "Composables e estado",
+      "summary": "Pinia + persist, global vs view-scoped, Orquestrador + Filiações, validação",
+      "requires": [],
+      "catalogs": ["catalog-composables.md"]
+    },
+    {
+      "id": "services",
+      "path": "vue/services.md",
+      "title": "Services",
+      "summary": "service vs composable, padrão useAsync, onde cada um mora",
+      "requires": ["axios"],
+      "catalogs": ["catalog-data.md"]
+    },
+    {
+      "id": "repositories",
+      "path": "vue/repositories.md",
+      "title": "Repositories / HTTP",
+      "summary": "toda chamada HTTP via repository, estrutura, tratamento de erros",
+      "requires": ["axios"],
+      "catalogs": ["catalog-data.md"]
+    },
+    {
+      "id": "tests",
+      "path": "core/tests.md",
+      "title": "Testes",
+      "summary": "FIRST, pirâmide, 4 pilares, test doubles, co-localização, E2E",
+      "requires": ["vitest"],
+      "catalogs": ["stack.md"]
+    }
+  ]
+}

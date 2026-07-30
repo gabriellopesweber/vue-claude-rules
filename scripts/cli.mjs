@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { runBuild } from './build.mjs'
 import { runInit } from './init.mjs'
+import { printCatalog } from './manifest.mjs'
 
 const [command, ...rest] = process.argv.slice(2)
 
@@ -12,10 +13,11 @@ const flag = (name) => {
 const usage = () => {
   console.log(`vue-claude-rules
 
+  list                                lista as regras disponíveis e os presets
   init [--profile <nome>] [--dist] [--force]
                                       detecta a stack, rascunha .claude/rules/project/ e prepara o package.json
   sync [--profile <nome>]             copia as regras para .claude/rules/shared/
-  sync --check                        falha se shared/ divergir do pacote
+  sync --check                        falha se shared/ divergir ou a adoção estiver incompleta
   build --standalone [--out <dir>]    gera um .claude/ autocontido para distribuição
                                       (template à venda, boilerplate, entrega a cliente)
 
@@ -23,6 +25,9 @@ Adoção guiada por agente: veja ADOPTING.md no pacote.`)
 }
 
 switch (command) {
+  case 'list':
+    await printCatalog()
+    break
   case 'init':
     await runInit({
       cwd: process.cwd(),

@@ -2,6 +2,23 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.5.0 — 2026-07-27
+
+Os profiles eram 4 baldes, e projeto real não cabe em balde. Um one-page com i18n **e** testes não era `site` (sem testes) nem `spa-full` (traz axios e Pinia): só dava para pegar demais. A seleção agora é **granular por padrão**; os presets viraram atalho.
+
+### Adicionado
+- **Seleção granular por id** — `"claudeRules": { "rules": ["vue", "dry", "vuetify", "i18n", "tests"] }`. Ids curtos em vez de caminhos internos; caminho completo e basename continuam aceitos.
+- **`vue-claude-rules list`** — imprime o catálogo: cada regra, o que cobre, o que pressupõe, mais os presets e um exemplo. Antes a lista custom existia mas era invisível, e exigia adivinhar `core/tests.md`.
+- **Catálogos derivados das regras escolhidas** — `catalogs` deixou de ser lista manual. Cada regra declara de que catálogo precisa (`dry`→UI, `composables`→composables, `services`/`repositories`→data); `stack.md` entra sempre.
+- **`rules/manifest.json`** — fonte única sobre as regras disponíveis, consumida por `list`, pelos presets, pela resolução de nomes e pela validação. Adicionar regra é adicionar entrada.
+- **Validação com erro útil** — id inválido lista os válidos e aponta o `list`, em vez de falhar num caminho inexistente.
+- **Aviso de dependência ausente** — selecionar `tests` sem vitest, ou `i18n` sem vue-i18n, avisa sem bloquear (pode ser um passo antes de instalar).
+- `init` deriva a lista granular da stack e a grava; `--profile` continua gravando `profile`. Configuração existente não é convertida sem pedirem.
+
+### Alterado
+- Presets reescritos em termos de ids, e o `init` só usa preset quando pedido explicitamente.
+- O aviso de "projeto parece distribuído" deixou de disparar só por "poucas views e nenhuma camada de API" — isso descreve qualquer landing legítima, e avisar demais treina o leitor a ignorar o aviso.
+
 ## v1.4.1 — 2026-07-27
 
 ### Corrigido

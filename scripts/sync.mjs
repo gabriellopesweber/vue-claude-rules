@@ -16,6 +16,8 @@ import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promi
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { catalogsFor, loadManifest, resolveRules } from './manifest.mjs'
+
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const CWD = process.cwd()
 const SHARED_DIR = join(CWD, '.claude', 'rules', 'shared')
@@ -38,18 +40,32 @@ const readConsumerConfig = async () => {
 }
 
 /**
- * Resolve o conjunto de regras. `claudeRules.rules` no package.json do consumidor
- * vence o profile — um projeto raramente cabe exatamente num bundle pronto.
+ * Resolve o conjunto de regras. `claudeRules.rules` vence o profile — um projeto
+ * raramente cabe num bucket pronto (um one-page com i18n e testes não é `site`
+ * nem `spa-full`). Aceita id curto, caminho ou basename; os catálogos saem das
+ * regras escolhidas, sem lista manual.
  */
 const resolveSelection = async () => {
   const config = await readConsumerConfig()
+  const manifest = await loadManifest()
 
-  if (Array.isArray(config.rules) && config.rules.length) {
-    return {
-      label: 'custom (claudeRules.rules)',
-      rules: config.rules,
-      catalogs: config.catalogs ?? ['catalog-ui.md', 'stack.md'],
+  const fail = (message) => {
+    console.error(`[rules] ${message}`)
+    console.error('[rules] veja o catálogo completo: npx vue-claude-rules list')
+    process.exit(1)
+  }
+
+  const build = (label, tokens, explicitCatalogs) => {
+    const { rules, unknown } = resolveRules(manifest, tokens)
+    if (unknown.length) {
+      fail(`regra desconhecida: ${unknown.join(', ')}. Ids válidos: ${manifest.map((r) => r.id).join(', ')}`)
     }
+    if (!rules.length) fail('nenhuma regra selecionada.')
+    return { label, rules: rules.map((r) => r.path), catalogs: explicitCatalogs ?? catalogsFor(rules) }
+  }
+
+  if (Array.isArray(config.rules) && config.rules.length && !cliProfile) {
+    return build(`custom (${config.rules.length} regras)`, config.rules, config.catalogs)
   }
 
   const profileName = cliProfile ?? config.profile ?? 'spa-full'
@@ -59,12 +75,11 @@ const resolveSelection = async () => {
     const available = (await readdir(join(PKG_ROOT, 'profiles')))
       .filter((f) => f.endsWith('.json'))
       .map((f) => f.replace('.json', ''))
-    console.error(`[rules] profile "${profileName}" não existe. Disponíveis: ${available.join(', ')}`)
-    process.exit(1)
+    fail(`profile "${profileName}" não existe. Presets: ${available.join(', ')}`)
   }
 
   const profile = await readJson(profilePath)
-  return { label: profileName, rules: profile.rules, catalogs: profile.catalogs }
+  return build(profileName, profile.rules, profile.catalogs)
 }
 
 /**

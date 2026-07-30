@@ -1,16 +1,5 @@
 {
   "name": "spa",
-  "description": "SPA com backend, sem suíte de teste. Igual ao spa-full menos core/tests.md.",
-  "requires": ["pinia", "axios", "vue-i18n"],
-  "rules": [
-    "core/dry.md",
-    "core/feedback.md",
-    "vue/vue.md",
-    "vue/composables.md",
-    "vue/services.md",
-    "vue/repositories.md",
-    "vuetify/vuetify.md",
-    "i18n/i18n.md"
-  ],
-  "catalogs": ["catalog-ui.md", "catalog-composables.md", "catalog-data.md", "stack.md"]
+  "description": "SPA com backend, sem suíte de teste.",
+  "rules": ["vue", "dry", "vuetify", "feedback", "composables", "services", "repositories", "i18n"]
 }

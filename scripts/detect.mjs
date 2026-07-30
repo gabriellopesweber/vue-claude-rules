@@ -318,5 +318,8 @@ export const looksDistributed = async (cwd, pkg, inv) => {
   if (inv && inv.views <= 2 && !inv.repositories.length) {
     reasons.push('poucas views e nenhuma camada de API')
   }
-  return reasons
+  // Esse último sinal, sozinho, também descreve uma landing legítima — só vale
+  // acompanhado. Avisar demais treina o leitor a ignorar o aviso.
+  const strong = reasons.filter((r) => !r.startsWith('poucas views'))
+  return strong.length ? reasons : []
 }

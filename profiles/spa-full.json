@@ -1,17 +1,5 @@
 {
   "name": "spa-full",
-  "description": "SPA com backend e suíte de teste: Pinia, axios, vue-i18n, Vitest. Camadas repository/service/composable.",
-  "requires": ["pinia", "axios", "vue-i18n", "vitest"],
-  "rules": [
-    "core/dry.md",
-    "core/feedback.md",
-    "core/tests.md",
-    "vue/vue.md",
-    "vue/composables.md",
-    "vue/services.md",
-    "vue/repositories.md",
-    "vuetify/vuetify.md",
-    "i18n/i18n.md"
-  ],
-  "catalogs": ["catalog-ui.md", "catalog-composables.md", "catalog-data.md", "stack.md"]
+  "description": "SPA com backend e suíte de teste: Pinia, axios, vue-i18n, Vitest.",
+  "rules": ["vue", "dry", "vuetify", "feedback", "composables", "services", "repositories", "i18n", "tests"]
 }
