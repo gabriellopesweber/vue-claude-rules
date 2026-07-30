@@ -93,6 +93,8 @@ const resolveSelection = async () => {
  * que não resolve nada a partir da raiz do consumidor. Só no sync sabemos onde o
  * pacote foi instalado — então é aqui que o caminho vira utilizável.
  */
+const normalizeEol = (text) => text.replace(/\r\n/g, '\n')
+
 const SCAFFOLD_PREFIX = 'node_modules/vue-claude-rules/scaffold/'
 const withScaffoldPaths = (text) => text.replace(/(?<!vue-claude-rules\/)scaffold\//g, SCAFFOLD_PREFIX)
 
@@ -146,7 +148,13 @@ const main = async () => {
     for (const [name, content] of expected) {
       const target = join(SHARED_DIR, name)
       if (!existsSync(target)) problems.push(`faltando: ${name}`)
-      else if ((await readFile(target, 'utf8')) !== content) problems.push(`divergente: ${name}`)
+      // No Windows com `core.autocrlf=true`, o checkout reescreve para CRLF e o
+      // sync grava LF: comparação byte a byte acusava os 10 arquivos como
+      // divergentes depois de qualquer troca de branch. O gate não pode depender
+      // da quebra de linha — o conteúdo é o mesmo.
+      else if (normalizeEol(await readFile(target, 'utf8')) !== normalizeEol(content)) {
+        problems.push(`divergente: ${name}`)
+      }
     }
     const current = existsSync(VERSION_FILE) ? (await readFile(VERSION_FILE, 'utf8')).trim() : '(ausente)'
     if (current !== `v${version}`) problems.push(`versão: ${current} ≠ v${version}`)
@@ -215,7 +223,11 @@ const main = async () => {
   await mkdir(SHARED_DIR, { recursive: true })
 
   for (const [name, content] of expected) {
-    await writeFile(join(SHARED_DIR, name), content, 'utf8')
+    const target = join(SHARED_DIR, name)
+    // Reescrever um arquivo que só difere na quebra de linha não muda nada e
+    // ainda churna mtime a cada troca de branch no Windows.
+    if (existsSync(target) && normalizeEol(await readFile(target, 'utf8')) === normalizeEol(content)) continue
+    await writeFile(target, content, 'utf8')
   }
 
   const stale = (await readdir(SHARED_DIR)).filter((f) => f.endsWith('.md') && !expected.has(f))

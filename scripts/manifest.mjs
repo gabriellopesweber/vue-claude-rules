@@ -113,26 +113,45 @@ export const printCatalog = async () => {
   const manifest = await loadManifest()
   const profiles = await listProfiles()
 
-  console.log('Regras disponíveis — use o id na lista `claudeRules.rules` do package.json:')
-  console.log('')
   const width = Math.max(...manifest.map((r) => r.id.length))
+  const dep = (rule) => {
+    const requires = (rule.requires ?? []).length ? `exige ${rule.requires.join('|')}` : ''
+    const assumes = (rule.assumes ?? []).length ? `partes pressupõem ${rule.assumes.join('|')}` : ''
+    const both = [requires, assumes].filter(Boolean).join('; ')
+    return both ? `  (${both})` : ''
+  }
+
+  console.log('Regras disponíveis:')
+  console.log('')
   for (const rule of manifest) {
-    const requires = rule.requires.length ? `  (pressupõe ${rule.requires.join(', ')})` : ''
-    console.log(`  ${rule.id.padEnd(width)}  ${rule.summary}${requires}`)
+    console.log(`  ${rule.id.padEnd(width)}  ${rule.summary}${dep(rule)}`)
   }
 
   console.log('')
-  console.log('Presets, para os casos comuns (`claudeRules.profile`):')
+  console.log('── Como escolher ────────────────────────────────────────────────')
+  console.log('')
+  console.log('Liste no package.json só o que o projeto pratica de fato:')
+  console.log('')
+  console.log('  "claudeRules": { "rules": ["vue", "dry", "vuetify", "i18n", "tests"] }')
+  console.log('')
+  console.log('Regra que o projeto não pratica é pior que regra faltando: manda o agente')
+  console.log('seguir um padrão que não existe aqui, ou instalar dependência que ninguém')
+  console.log('pediu. Sem suíte de teste, `tests` fora; sem vue-i18n, `i18n` fora.')
+  console.log('')
+  console.log('Na dúvida, não escolha à mão: `init` monta a lista a partir das')
+  console.log('dependências que encontrar, e aí você ajusta.')
+  console.log('')
+  console.log('Os catálogos de .claude/rules/project/ são derivados das regras escolhidas.')
+
+  console.log('')
+  console.log('── Presets ──────────────────────────────────────────────────────')
+  console.log('')
+  console.log('Atalho para protótipo, ou quando ainda não se quer decidir. Escolher preset')
+  console.log('quase sempre é pegar demais — o `spa-full` num projeto sem backend carrega')
+  console.log('regra de repository e de i18n que não se aplicam. A lista granular vence.')
   console.log('')
   for (const profile of profiles) {
     const ids = resolveRules(manifest, profile.rules).rules.map((r) => r.id)
     console.log(`  ${profile.name.padEnd(9)}  ${ids.join(', ')}`)
   }
-
-  console.log('')
-  console.log('Granular vence o preset. Exemplo — one-page com i18n e testes:')
-  console.log('')
-  console.log('  "claudeRules": { "rules": ["vue", "dry", "vuetify", "i18n", "tests"] }')
-  console.log('')
-  console.log('Os catálogos de .claude/rules/project/ são derivados das regras escolhidas.')
 }

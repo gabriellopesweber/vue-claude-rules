@@ -19,16 +19,24 @@
       "summary": "reuso primeiro, quando extrair componente, checklist, anti-padrões",
       "requires": [],
       "assumes": [],
-      "catalogs": ["catalog-ui.md"]
+      "catalogs": [
+        "catalog-ui.md"
+      ]
     },
     {
       "id": "vuetify",
       "path": "vuetify/vuetify.md",
       "title": "Vuetify",
-      "summary": "tokens de tema, props descontinuadas, defaults, mobile, ApexCharts",
-      "requires": ["vuetify"],
-      "assumes": ["vue3-apexcharts"],
-      "catalogs": ["stack.md"]
+      "summary": "tokens de tema, classes utilitárias, defaults, mobile, ApexCharts",
+      "requires": [
+        "vuetify"
+      ],
+      "assumes": [
+        "vue3-apexcharts"
+      ],
+      "catalogs": [
+        "stack.md"
+      ]
     },
     {
       "id": "feedback",
@@ -37,16 +45,22 @@
       "summary": "toast, alerta persistente e inline — qual usar em cada caso",
       "requires": [],
       "assumes": [],
-      "catalogs": ["catalog-ui.md"]
+      "catalogs": [
+        "catalog-ui.md"
+      ]
     },
     {
       "id": "i18n",
       "path": "i18n/i18n.md",
       "title": "i18n",
       "summary": "estrutura JSON, nomenclatura de chaves, interpolação, proibições",
-      "requires": ["vue-i18n"],
+      "requires": [
+        "vue-i18n"
+      ],
       "assumes": [],
-      "catalogs": ["stack.md"]
+      "catalogs": [
+        "stack.md"
+      ]
     },
     {
       "id": "composables",
@@ -54,8 +68,12 @@
       "title": "Composables e estado",
       "summary": "global vs view-scoped, Orquestrador + Filiações; seções de Pinia e validação",
       "requires": [],
-      "assumes": ["pinia"],
-      "catalogs": ["catalog-composables.md"]
+      "assumes": [
+        "pinia"
+      ],
+      "catalogs": [
+        "catalog-composables.md"
+      ]
     },
     {
       "id": "services",
@@ -63,8 +81,12 @@
       "title": "Services",
       "summary": "service vs composable, padrão useAsync, onde cada um mora",
       "requires": [],
-      "assumes": ["axios"],
-      "catalogs": ["catalog-data.md"]
+      "assumes": [
+        "axios"
+      ],
+      "catalogs": [
+        "catalog-data.md"
+      ]
     },
     {
       "id": "repositories",
@@ -72,17 +94,30 @@
       "title": "Repositories / HTTP",
       "summary": "toda chamada HTTP via repository, estrutura, tratamento de erros",
       "requires": [],
-      "assumes": ["axios"],
-      "catalogs": ["catalog-data.md"]
+      "assumes": [
+        "axios"
+      ],
+      "catalogs": [
+        "catalog-data.md"
+      ]
     },
     {
       "id": "tests",
       "path": "core/tests.md",
       "title": "Testes",
       "summary": "FIRST, pirâmide, 4 pilares, test doubles, co-localização, E2E",
-      "requires": ["vitest", "jest", "@playwright/test", "cypress"],
-      "assumes": ["vitest"],
-      "catalogs": ["stack.md"]
+      "requires": [
+        "vitest",
+        "jest",
+        "@playwright/test",
+        "cypress"
+      ],
+      "assumes": [
+        "vitest"
+      ],
+      "catalogs": [
+        "stack.md"
+      ]
     }
   ]
 }
