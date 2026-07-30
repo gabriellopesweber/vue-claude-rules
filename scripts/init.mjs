@@ -575,19 +575,6 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
     console.log('       um novo a partir das regras em uso (guarde o atual antes, para comparar)')
   }
 
-  // Windows com `core.autocrlf=true` reescreve os arquivos gerados para CRLF no
-  // checkout. O `--check` normaliza antes de comparar, então o gate não quebra;
-  // mas sem isto o diff de todo PR mostra os 10 arquivos como alterados.
-  const gitattributes = join(cwd, '.gitattributes')
-  const attrs = existsSync(gitattributes) ? await readFile(gitattributes, 'utf8') : ''
-  if (!/\.claude/.test(attrs)) {
-    console.log('')
-    console.log('[init] recomendado — adicione ao .gitattributes para fixar a quebra de linha')
-    console.log('       dos arquivos gerados (evita diff falso a cada troca de branch):')
-    console.log('')
-    console.log('       .claude/rules/** text eol=lf')
-  }
-
   if (!distMode && !alreadyNpx) {
     const signals = await looksDistributed(cwd, pkg, inv)
     if (signals.length) {

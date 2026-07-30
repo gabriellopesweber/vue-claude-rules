@@ -124,12 +124,16 @@ pnpm test           # se houver suíte
 
 `rules:check` só sai 0 quando `shared/` está em dia **e** os catálogos não têm mais `TODO`. É deliberado: sincronia sem inventário não é adoção. (`--allow-incomplete` verifica só a sincronia, para CI de projeto já adotado.)
 
-**Windows:** com `core.autocrlf=true` — o padrão de muitas instalações — o checkout reescreve os arquivos gerados para CRLF, enquanto o sync grava LF. O `--check` normaliza antes de comparar, então o gate não quebra; mas o **diff** de todo PR mostraria os arquivos como alterados. Fixe a quebra de linha:
+**Windows:** com `core.autocrlf=true` — o padrão de muitas instalações — o checkout reescreve os arquivos gerados para CRLF, enquanto o sync grava LF. O `--check` normaliza antes de comparar, então **o gate não quebra**; o que sobra é o **diff** de todo PR mostrando os arquivos como alterados sem ninguém ter editado nada. O `sync` avisa quando detecta o caso.
+
+`.gitattributes` é do projeto — o pacote não escreve nele. Duas formas, ambas válidas:
 
 ```
-# .gitattributes
-.claude/rules/** text eol=lf
+.claude/rules/** text eol=lf    # só os arquivos gerados: escopo mínimo
+* text=auto eol=lf              # o repositório inteiro: melhor em time misto Windows/Linux
 ```
+
+A segunda pede declarar os binários (`*.png binary`, `*.woff2 binary`, `*.glb binary`…) e rodar `git add --renormalize .` uma vez.
 
 Commite `.claude/rules/shared/` — os arquivos precisam existir para o agente mesmo sem `node_modules`, e cada atualização vira diff revisável no PR.
 

@@ -95,6 +95,37 @@ const resolveSelection = async () => {
  */
 const normalizeEol = (text) => text.replace(/\r\n/g, '\n')
 
+/**
+ * O `--check` já normaliza a quebra de linha, então nada quebra por causa disso.
+ * O que sobra é cosmético e chato: o diff de todo PR mostrando os arquivos
+ * gerados como alterados. Avisa só com evidência — CRLF de fato na árvore e
+ * nenhuma regra cobrindo — para não virar ruído em quem não tem o problema.
+ */
+const warnAboutEol = async () => {
+  if (!existsSync(SHARED_DIR)) return
+
+  const files = (await readdir(SHARED_DIR)).filter((f) => f.endsWith('.md'))
+  let withCrlf = 0
+  for (const file of files) {
+    if ((await readFile(join(SHARED_DIR, file), 'utf8')).includes('\r\n')) withCrlf++
+  }
+  if (!withCrlf) return
+
+  const attrsPath = join(CWD, '.gitattributes')
+  const attrs = existsSync(attrsPath) ? await readFile(attrsPath, 'utf8') : ''
+  if (/^\s*[^#\n]*\.claude/m.test(attrs) || /^\s*\*\s+text=auto/m.test(attrs)) return
+
+  console.log('')
+  console.log(`[rules] ${withCrlf} de ${files.length} arquivos gerados estão em CRLF na árvore.`)
+  console.log('[rules] O check normaliza antes de comparar, então nada quebra — mas o diff de')
+  console.log('[rules] todo PR vai mostrá-los como alterados. Para resolver, no .gitattributes:')
+  console.log('')
+  console.log('          .claude/rules/** text eol=lf      # só os arquivos gerados')
+  console.log('          * text=auto eol=lf                # ou o repositório inteiro')
+  console.log('')
+  console.log('[rules] Depois: git add --renormalize . (e declare os binários como `binary`).')
+}
+
 const SCAFFOLD_PREFIX = 'node_modules/vue-claude-rules/scaffold/'
 const withScaffoldPaths = (text) => text.replace(/(?<!vue-claude-rules\/)scaffold\//g, SCAFFOLD_PREFIX)
 
@@ -142,6 +173,11 @@ const main = async () => {
   // o código em si fica só no pacote, sem cópia no projeto.
   const scaffoldIndex = await readFile(join(PKG_ROOT, 'scaffold', 'README.md'), 'utf8')
   expected.set('scaffold.md', banner('scaffold/README.md', `v${version}`) + withScaffoldPaths(scaffoldIndex))
+
+  // `.gitattributes` é do projeto — o pacote informa, não escreve. E só avisa
+  // com evidência: CRLF de fato na árvore e nada cobrindo. Precisa valer para o
+  // `--check` também, que é onde a pessoa costuma esbarrar no problema.
+  await warnAboutEol()
 
   if (checkOnly) {
     const problems = []
@@ -236,6 +272,7 @@ const main = async () => {
   }
 
   await writeFile(VERSION_FILE, `v${version}\n`, 'utf8')
+
 
   await mkdir(PROJECT_DIR, { recursive: true })
   const seeded = []

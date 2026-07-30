@@ -6,7 +6,7 @@ Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **majo
 
 ### Corrigido
 - **`rules:check` acusava os 10 arquivos como divergentes no Windows.** Com `core.autocrlf=true`, o checkout reescreve para CRLF; o sync grava LF; a comparação byte a byte quebrava após qualquer troca de branch. Mesmo modo de falha da v1.4.1 — um gate que acusa trabalho correto. A comparação agora normaliza a quebra de linha; edição real continua sendo detectada. O `sync` também deixou de reescrever arquivo que só difere no EOL, evitando churn de mtime.
-- `init` recomenda a linha de `.gitattributes` (`.claude/rules/** text eol=lf`) quando não há regra cobrindo `.claude`, e o `ADOPTING.md` documenta o porquê: o gate sobrevive sem isso, mas o **diff** de todo PR mostraria os arquivos como alterados.
+- `sync` e `--check` avisam sobre `.gitattributes` **com evidência**: só quando os arquivos gerados estão de fato em CRLF na árvore e nada no `.gitattributes` cobre isso. Em Linux/macOS, ou onde já foi resolvido, o aviso não aparece. O pacote **informa, não escreve** — `.gitattributes` é política do projeto, e a mesma regra que impede o pacote de instalar dependência ou sobrescrever `project/` vale aqui. `ADOPTING.md` documenta as duas formas (escopo mínimo e repositório inteiro).
 
 ### Alterado
 - **`list` deixou de dar aos presets o mesmo destaque das regras.** A ordem agora é: catálogo → como escolher (exemplo granular, com o custo de incluir regra que o projeto não pratica) → presets no rodapé, apresentados como atalho de protótipo. Escolher preset quase sempre é pegar demais; a saída anterior empurrava para isso e só desmentia na última linha.
