@@ -56,6 +56,25 @@ const readBalanced = (text, openIndex) => {
   return null
 }
 
+/** Chaves de primeiro nível de um corpo de objeto, ignorando o que está aninhado. */
+const topLevelKeys = (block) => {
+  const keys = []
+  let depth = 0
+  for (let i = 0; i < block.length; i++) {
+    const char = block[i]
+    if (char === '{' || char === '[' || char === '(') depth++
+    else if (char === '}' || char === ']' || char === ')') depth--
+    else if (depth === 0) {
+      const match = /^['"]?([\w-]+)['"]?\s*:/.exec(block.slice(i))
+      if (match && (i === 0 || /[\s,{]/.test(block[i - 1]))) {
+        keys.push(match[1])
+        i += match[0].length - 1
+      }
+    }
+  }
+  return keys
+}
+
 /**
  * Extrai o bloco `defineProps({...})` e devolve os nomes + defaults declarados.
  * O corpo de cada prop é lido com balanceamento de chaves — `default: () => ({})`
@@ -238,6 +257,7 @@ export const inventory = async (cwd) => {
 
   let vuetifyDefaults = []
   let vuetifyThemes = []
+  const customThemeColors = new Set()
   if (vuetifyPlugin) {
     const start = vuetifyPlugin.search(/defaults\s*:\s*\{/)
     if (start !== -1) {
@@ -266,7 +286,19 @@ export const inventory = async (cwd) => {
     const themeStart = vuetifyPlugin.search(/themes\s*:\s*\{/)
     if (themeStart !== -1) {
       const block = readBalanced(vuetifyPlugin, vuetifyPlugin.indexOf('{', themeStart))
-      if (block) vuetifyThemes = [...block.matchAll(/(?:^|\n)\s*(\w+)\s*:\s*\{/g)].map(([, n]) => n)
+      if (block) {
+        // Só as chaves de primeiro nível do bloco `themes` são temas — sem o
+        // controle de profundidade, `colors` e `fonts` aninhados entravam na lista.
+        vuetifyThemes = topLevelKeys(block)
+        // Token customizado que não está declarado em todos os temas desaparece
+        // num deles sem erro — e a regra manda conferir esta lista antes de usar
+        // um token, então ela precisa existir.
+        for (const match of block.matchAll(/colors\s*:\s*\{/g)) {
+          const colorsBlock = readBalanced(block, block.indexOf('{', match.index + match[0].length - 1))
+          if (!colorsBlock) continue
+          for (const [, key] of colorsBlock.matchAll(/(?:^|\n)\s*'?([\w-]+)'?\s*:/g)) customThemeColors.add(key)
+        }
+      }
     }
     const defaultTheme = vuetifyPlugin.match(/defaultTheme\s*:\s*['"](\w+)['"]/)?.[1] ?? null
     if (defaultTheme) vuetifyThemes = [...new Set([defaultTheme, ...vuetifyThemes])]
@@ -295,6 +327,28 @@ export const inventory = async (cwd) => {
     localeFiles,
     vuetifyDefaults,
     vuetifyThemes,
+    // Tokens do tema padrão do Vuetify 4 — o que sobra é declaração do projeto.
+    customThemeColors: [...customThemeColors]
+      .filter(
+        (c) =>
+          ![
+            'background',
+            'surface',
+            'surface-bright',
+            'surface-light',
+            'surface-variant',
+            'on-surface-variant',
+            'primary',
+            'primary-darken-1',
+            'secondary',
+            'secondary-darken-1',
+            'error',
+            'info',
+            'success',
+            'warning',
+          ].includes(c) && !c.startsWith('on-'),
+      )
+      .sort(),
     api,
     views: (await listFiles(join(src, 'views'), (n) => n.endsWith('.vue'))).length,
   }

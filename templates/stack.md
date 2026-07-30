@@ -21,6 +21,15 @@ Chaves de `localStorage`: `{prefixo}_*` (ex.: `{prefixo}_ui`).
 | `VBtn` | |
 | `VTextField` | |
 
+**Temas:** {ex.: `light`, `dark`}
+
+### Tokens de cor além do tema padrão do Vuetify
+
+{Lista dos tokens declarados no `theme.themes.*.colors` deste projeto — nomes como
+`surface-container-low` ou `tertiary` **não vêm do Vuetify**. Token fora desta lista e
+da lista padrão não existe: usá-lo produz cor vazia, sem erro. Confirmar que todos
+estão declarados em **todos** os temas.}
+
 ## i18n
 
 - Idiomas: {ex.: `pt-BR` (único)}

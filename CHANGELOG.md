@@ -2,6 +2,26 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.7.0 — 2026-07-27
+
+Revisão da regra do Vuetify contra o **fonte da 4.1.5** (`node_modules/vuetify/lib/composables/theme.js`), não contra a memória. A regra vinha do Medispace-ui e carregava decisões dele como se fossem do framework.
+
+### Corrigido
+- **A lista de "tokens disponíveis" era em grande parte do Medispace, não do Vuetify.** `surface-container-low/lowest/high`, `outline-variant`, `secondary-container` e `on-secondary-container` são declarados no tema daquele projeto; `tertiary` não existe nem lá nem no Vuetify (zero ocorrências no pacote). Num projeto cru, seguir a lista produzia `rgb(var(--v-theme-surface-container-low))` — var inexistente, cor vazia, sem erro. Agora a regra separa **tokens do tema padrão** (lista verificada) de **tokens do projeto** (que precisam estar em `project/stack.md`), e diz que o que não está em nenhuma das duas listas não existe.
+- **`text-on-*` não existe.** Para tokens `on-*` a classe gerada é o nome nu (`.on-surface`), não `.text-on-surface`. A regra listava classes utilitárias sem essa distinção.
+- **`text-medium-emphasis` deriva de `on-background`**, não de `on-surface` — resultado errado dentro de container de fundo contrastante. Documentada a alternativa explícita.
+- **`bg-*` já define a cor do texto** (`color: on-{token}`), então acrescentar classe de texto depois é redundante. Não estava dito.
+- A tabela de "props descontinuadas" tratava `dense` como algo a evitar no dia a dia; `dense` só sobrevive no `VRow` e já emite deprecation apontando para `density`. Virou uma linha na seção de defaults, com os três valores válidos.
+
+### Adicionado
+- Bloco `variables` do tema (opacidades, `border-color`, `shadow-color`) — lidos como `var(--v-{nome})`, sem `theme-`. A regra dizia "adicione ao tema" sem dizer que token que não é cor mora noutro lugar.
+- `border-{token}` na tabela de classes utilitárias, e `<v-defaults-provider>` como alternativa a repetir prop num escopo.
+- `defaultTheme` do Vuetify é `'system'`: a app já segue o SO sem configuração. Antes de construir toggle, verificar se o que falta é só persistir a escolha.
+- **`init` extrai os tokens de cor customizados** do plugin e os lista em `project/stack.md`, com a ressalva de confirmar que estão declarados em todos os temas. A regra manda conferir essa lista, então ela precisa existir. Verificado nos três projetos adotados (Medispace-ui: 6 tokens; Velox: `nav`, `nav-deep`; animals: `tertiary`, `surface-container-*`).
+
+### Corrigido (detecção)
+- A extração de nomes de tema pegava chaves aninhadas: `themes: { light: { colors: {…}, fonts: {…} } }` devolvia `light, colors, fonts, dark`. Agora só lê chaves de primeiro nível.
+
 ## v1.6.0 — 2026-07-27
 
 Correções a partir de uma segunda adoção do zero, feita por outro agente.

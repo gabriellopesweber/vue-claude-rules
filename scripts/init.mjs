@@ -274,6 +274,23 @@ const buildStack = (inv, stack, pkg, profile, refs) => {
         '',
       )
     }
+
+    // A regra compartilhada manda conferir esta lista antes de usar um token
+    // fora do tema padrão do Vuetify — então ela tem que estar aqui.
+    lines.push('### Tokens de cor além do tema padrão do Vuetify', '')
+    if (inv.customThemeColors.length) {
+      lines.push(
+        inv.customThemeColors.map((c) => `\`${c}\``).join(' · '),
+        '',
+        'Declarados no tema deste projeto. Qualquer token fora desta lista e da lista padrão do Vuetify **não existe** — usá-lo produz cor vazia sem erro. TODO: confirmar que todos estão declarados em **todos** os temas.',
+        '',
+      )
+    } else {
+      lines.push(
+        'Nenhum — o projeto usa só os tokens do tema padrão do Vuetify. Token novo precisa ser declarado no `theme.themes.*.colors` de **todos** os temas antes de ser usado.',
+        '',
+      )
+    }
   }
 
   lines.push('## i18n', '')
