@@ -1,5 +1,9 @@
 # Regras Vuetify 4
 
+> **Escopo:** vale para projetos que usam **Vuetify**. Noutra lib de UI, o princípio ("cor só por token do tema, nunca hex no componente") continua valendo, mas os nomes de token e as props desta página não. Não instale Vuetify para "seguir a regra".
+>
+> Duas seções são condicionais mesmo dentro do Vuetify: **Tema** (só onde há dark/light) e **ApexCharts** (só onde `vue3-apexcharts` já é dependência).
+>
 > **Defaults de componente, paleta e tokens extras deste projeto:** `.claude/rules/project/stack.md`.
 
 ## Cores — sempre tokens de tema

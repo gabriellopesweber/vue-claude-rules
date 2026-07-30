@@ -1,5 +1,7 @@
 {
-  "$comment": "Fonte única de verdade sobre as regras disponíveis. Usado por `list`, pelos profiles, pela resolução de nomes e pela validação. Adicionar regra = adicionar entrada aqui.",
+  "$comment": "Fonte única de verdade sobre as regras disponíveis. Usado por `list`, pelos presets, pela resolução de nomes e pela validação. Adicionar regra = adicionar entrada aqui.",
+  "$requires": "Sem NENHUMA destas, a regra é inaplicável — o texto todo trata do que não existe. Lista de alternativas (any-of). Aviso forte.",
+  "$assumes": "A regra se aplica, mas PARTES dela pressupõem esta ferramenta. Aviso fraco: o preâmbulo de escopo da própria regra diz o que ignorar.",
   "rules": [
     {
       "id": "vue",
@@ -7,6 +9,7 @@
       "title": "Componentes Vue",
       "summary": "script setup, ordem de imports, props/emits/v-model, camadas, nomenclatura",
       "requires": [],
+      "assumes": [],
       "catalogs": []
     },
     {
@@ -15,6 +18,7 @@
       "title": "Reuso e DRY",
       "summary": "reuso primeiro, quando extrair componente, checklist, anti-padrões",
       "requires": [],
+      "assumes": [],
       "catalogs": ["catalog-ui.md"]
     },
     {
@@ -23,6 +27,7 @@
       "title": "Vuetify",
       "summary": "tokens de tema, props descontinuadas, defaults, mobile, ApexCharts",
       "requires": ["vuetify"],
+      "assumes": ["vue3-apexcharts"],
       "catalogs": ["stack.md"]
     },
     {
@@ -31,6 +36,7 @@
       "title": "Feedback ao usuário",
       "summary": "toast, alerta persistente e inline — qual usar em cada caso",
       "requires": [],
+      "assumes": [],
       "catalogs": ["catalog-ui.md"]
     },
     {
@@ -39,14 +45,16 @@
       "title": "i18n",
       "summary": "estrutura JSON, nomenclatura de chaves, interpolação, proibições",
       "requires": ["vue-i18n"],
+      "assumes": [],
       "catalogs": ["stack.md"]
     },
     {
       "id": "composables",
       "path": "vue/composables.md",
       "title": "Composables e estado",
-      "summary": "Pinia + persist, global vs view-scoped, Orquestrador + Filiações, validação",
+      "summary": "global vs view-scoped, Orquestrador + Filiações; seções de Pinia e validação",
       "requires": [],
+      "assumes": ["pinia"],
       "catalogs": ["catalog-composables.md"]
     },
     {
@@ -54,7 +62,8 @@
       "path": "vue/services.md",
       "title": "Services",
       "summary": "service vs composable, padrão useAsync, onde cada um mora",
-      "requires": ["axios"],
+      "requires": [],
+      "assumes": ["axios"],
       "catalogs": ["catalog-data.md"]
     },
     {
@@ -62,7 +71,8 @@
       "path": "vue/repositories.md",
       "title": "Repositories / HTTP",
       "summary": "toda chamada HTTP via repository, estrutura, tratamento de erros",
-      "requires": ["axios"],
+      "requires": [],
+      "assumes": ["axios"],
       "catalogs": ["catalog-data.md"]
     },
     {
@@ -70,7 +80,8 @@
       "path": "core/tests.md",
       "title": "Testes",
       "summary": "FIRST, pirâmide, 4 pilares, test doubles, co-localização, E2E",
-      "requires": ["vitest"],
+      "requires": ["vitest", "jest", "@playwright/test", "cypress"],
+      "assumes": ["vitest"],
       "catalogs": ["stack.md"]
     }
   ]

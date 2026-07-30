@@ -4,7 +4,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { detectStack, inventory, looksDistributed, suggestProfile } from './detect.mjs'
-import { catalogsFor, loadManifest, missingDeps, resolveRules, rulesForStack } from './manifest.mjs'
+import { auditDeps, catalogsFor, formatDepNote, loadManifest, resolveRules, rulesForStack } from './manifest.mjs'
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const TODO = '<!-- TODO: revisar — rascunho gerado a partir do código -->'
@@ -457,8 +457,8 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
   console.log(`[init] detectado: ${detected.join(', ') || 'nada além de vue'}`)
   console.log(`[init] regras (${selectionLabel}): ${selection.map((r) => r.id).join(', ')}`)
 
-  for (const { rule, absent } of missingDeps(selection, deps)) {
-    console.log(`[init] ⚠️  regra "${rule.id}" pressupõe ${absent.join(', ')}, que não está instalado`)
+  for (const note of auditDeps(selection, deps)) {
+    console.log(`[init] ${note.level === 'requires' ? '⚠️ ' : 'nota:'} ${formatDepNote(note)}`)
   }
 
   pkg.scripts ??= {}
@@ -476,7 +476,10 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
     const base = `npx -y github:gabriellopesweber/vue-claude-rules#v${own.version}`
     pkg.scripts['rules:sync'] = `${base} sync`
     pkg.scripts['rules:check'] = `${base} sync --check`
-    pkg.scripts['rules:dist'] ??= `${base} build --standalone --out dist-claude/.claude`
+    // `??=` protege o valor, mas não a ausência intencional: num projeto que usa
+    // npx sem ser distribuído, o script voltava a cada `init`. Só entra quando
+    // `--dist` foi pedido de fato, nunca por inferência.
+    if (distMode) pkg.scripts['rules:dist'] ??= `${base} build --standalone --out dist-claude/.claude`
   } else {
     pkg.scripts['rules:sync'] ??= 'node node_modules/vue-claude-rules/scripts/sync.mjs'
     pkg.scripts['rules:check'] ??= 'node node_modules/vue-claude-rules/scripts/sync.mjs --check'
@@ -551,7 +554,8 @@ export const runInit = async ({ cwd, force = false, profileOverride = null, dist
     await writeFile(claudeMd, buildClaudeMd(pkg, stack, refs, selection, standalone), 'utf8')
     console.log('[init] CLAUDE.md gerado — tabela e regras universais filtradas pelas regras em uso')
   } else {
-    console.log('[init] CLAUDE.md já existe — não tocado')
+    console.log('[init] CLAUDE.md já existe — não tocado. Apague-o e rode de novo para gerar')
+    console.log('       um novo a partir das regras em uso (guarde o atual antes, para comparar)')
   }
 
   if (!distMode && !alreadyNpx) {

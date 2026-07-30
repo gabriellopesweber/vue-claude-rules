@@ -48,11 +48,39 @@ export const catalogsFor = (rules) => {
   return order.filter((c) => set.has(c))
 }
 
-/** Regras cuja dependência declarada não está no projeto — aviso, não erro. */
-export const missingDeps = (rules, deps) =>
-  rules
-    .map((rule) => ({ rule, absent: rule.requires.filter((d) => !deps.includes(d)) }))
-    .filter(({ absent }) => absent.length)
+/**
+ * Duas perguntas diferentes, que antes eu tratava como uma:
+ *
+ *   `requires` — "esta regra faz sentido aqui?" `i18n` sem vue-i18n é inútil, o
+ *     texto todo trata de `t()` e de `locales/`. Lista de alternativas: basta uma
+ *     presente. Aviso forte.
+ *
+ *   `assumes` — "partes desta regra pressupõem esta ferramenta?" `services` com
+ *     axios: a divisão service/composable vale igual com `fetch`; só os detalhes
+ *     de interceptor e 401 não. Marcar como `requires` produzia falso negativo —
+ *     a regra era aplicável, a dependência declarada não. Aviso fraco.
+ *
+ * Nenhum dos dois bloqueia: quem escolheu pode estar um passo antes de instalar.
+ */
+export const auditDeps = (rules, deps) => {
+  const has = (name) => deps.includes(name)
+  const notes = []
+  for (const rule of rules) {
+    const requires = rule.requires ?? []
+    const assumes = rule.assumes ?? []
+    if (requires.length && !requires.some(has)) {
+      notes.push({ rule, level: 'requires', missing: requires })
+    } else if (assumes.length && !assumes.some(has)) {
+      notes.push({ rule, level: 'assumes', missing: assumes })
+    }
+  }
+  return notes
+}
+
+export const formatDepNote = ({ rule, level, missing }) =>
+  level === 'requires'
+    ? `regra "${rule.id}" pressupõe ${missing.join(' ou ')}, que não está no projeto — o conteúdo dela pode não se aplicar aqui`
+    : `regra "${rule.id}": partes dela pressupõem ${missing.join(' ou ')}, ausente — ver o preâmbulo de escopo em .claude/rules/shared/${rule.path.split('/').pop()}`
 
 /**
  * Seleção derivada da stack — granular, sem passar por bucket. É o que o `init`

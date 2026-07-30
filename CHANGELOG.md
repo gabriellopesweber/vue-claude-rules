@@ -2,6 +2,23 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.6.0 — 2026-07-27
+
+Correções a partir de uma segunda adoção do zero, feita por outro agente.
+
+### Corrigido
+- **A auditoria de dependências só rodava no `init`.** O `init` roda uma vez; o `sync`/`--check` roda em todo PR e no CI — é lá que a configuração apodrece (alguém remove o axios e a regra segue carregada mandando usar `api.js`). Selecionar `services` num projeto sem axios saía com exit 0 e silêncio. Agora os dois auditam.
+- **`--force` do `init` ressuscitava `rules:dist`.** `??=` protege o valor, não a ausência intencional: num projeto que usa `npx` sem ser distribuído, o script voltava a cada execução. Agora só entra com `--dist` explícito, nunca por inferência.
+- `init` avisa que um `CLAUDE.md` existente não foi tocado **e** como regerar; o `sync` aponta o `list` também quando não há seleção configurada, não só em id inválido.
+- `vuetify.md` era a única regra com pressuposto e sem bloco de escopo no topo. Ganhou um, marcando também as duas seções condicionais (Tema e ApexCharts).
+
+### Alterado
+- **`requires` respondia a duas perguntas diferentes** e produzia falso negativo. Separado em dois campos:
+  - **`requires`** — sem isso a regra é inaplicável (`i18n` sem vue-i18n). Lista de alternativas: `tests` aceita vitest, jest, playwright ou cypress. Aviso forte.
+  - **`assumes`** — a regra vale, mas **partes** dela pressupõem a ferramenta. `services` com axios: a divisão service/composable vale igual com `fetch`; só interceptor e 401 não. Aviso fraco, apontando o preâmbulo de escopo da própria regra.
+
+  Reclassificados: `services`, `repositories` e `composables` saíram de `requires` para `assumes` — eram aplicáveis, e a declaração dizia o contrário.
+
 ## v1.5.0 — 2026-07-27
 
 Os profiles eram 4 baldes, e projeto real não cabe em balde. Um one-page com i18n **e** testes não era `site` (sem testes) nem `spa-full` (traz axios e Pinia): só dava para pegar demais. A seleção agora é **granular por padrão**; os presets viraram atalho.

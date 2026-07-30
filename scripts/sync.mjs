@@ -16,7 +16,7 @@ import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promi
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { catalogsFor, loadManifest, resolveRules } from './manifest.mjs'
+import { auditDeps, catalogsFor, formatDepNote, loadManifest, resolveRules } from './manifest.mjs'
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const CWD = process.cwd()
@@ -61,11 +61,17 @@ const resolveSelection = async () => {
       fail(`regra desconhecida: ${unknown.join(', ')}. Ids válidos: ${manifest.map((r) => r.id).join(', ')}`)
     }
     if (!rules.length) fail('nenhuma regra selecionada.')
-    return { label, rules: rules.map((r) => r.path), catalogs: explicitCatalogs ?? catalogsFor(rules) }
+    return { label, rules, paths: rules.map((r) => r.path), catalogs: explicitCatalogs ?? catalogsFor(rules) }
   }
 
   if (Array.isArray(config.rules) && config.rules.length && !cliProfile) {
     return build(`custom (${config.rules.length} regras)`, config.rules, config.catalogs)
+  }
+
+  if (!cliProfile && !config.profile) {
+    console.warn('[rules] nenhuma seleção configurada — usando o preset spa-full.')
+    console.warn('[rules] configure `claudeRules.rules` no package.json (ou rode `init`).')
+    console.warn('[rules] catálogo de regras disponíveis: npx vue-claude-rules list')
   }
 
   const profileName = cliProfile ?? config.profile ?? 'spa-full'
@@ -107,7 +113,19 @@ const main = async () => {
   const profileName = selection.label
   const expected = new Map()
 
-  for (const rulePath of selection.rules) {
+  // O `init` roda uma vez; o sync roda em todo PR e no CI. É aqui que a config
+  // apodrece: alguém remove o axios e a regra segue carregada mandando usar
+  // api.js. Por isso a auditoria de dependências vive nos dois.
+  const consumerPkg = join(CWD, 'package.json')
+  if (existsSync(consumerPkg)) {
+    const pkg = await readJson(consumerPkg)
+    const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies })
+    for (const note of auditDeps(selection.rules, deps)) {
+      console.warn(`[rules] ${note.level === 'requires' ? '⚠️ ' : 'nota:'} ${formatDepNote(note)}`)
+    }
+  }
+
+  for (const rulePath of selection.paths) {
     const source = join(PKG_ROOT, 'rules', rulePath)
     if (!existsSync(source)) {
       console.error(`[rules] regra "${rulePath}" não existe em rules/`)

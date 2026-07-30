@@ -70,17 +70,19 @@ A seleção é **granular**: você escolhe as regras, uma por uma. Nenhum projet
 npx vue-claude-rules list   # o catálogo, a qualquer momento
 ```
 
-| id | Cobre | Pressupõe |
-|---|---|---|
-| `vue` | `<script setup>`, ordem de imports, props/emits/v-model, camadas, nomenclatura | — |
-| `dry` | reuso primeiro, quando extrair componente, checklist, anti-padrões | — |
-| `vuetify` | tokens de tema, props descontinuadas, defaults, mobile, ApexCharts | `vuetify` |
-| `feedback` | toast, alerta persistente e inline — qual usar em cada caso | — |
-| `i18n` | estrutura JSON, nomenclatura de chaves, interpolação, proibições | `vue-i18n` |
-| `composables` | Pinia + persist, global vs view-scoped, Orquestrador + Filiações, validação | — |
-| `services` | service vs composable, padrão `useAsync`, onde cada um mora | `axios` |
-| `repositories` | toda chamada HTTP via repository, estrutura, tratamento de erros | `axios` |
-| `tests` | FIRST, pirâmide, 4 pilares, test doubles, co-localização, E2E | `vitest` |
+| id | Cobre | Exige | Partes pressupõem |
+|---|---|---|---|
+| `vue` | `<script setup>`, ordem de imports, props/emits/v-model, camadas, nomenclatura | — | — |
+| `dry` | reuso primeiro, quando extrair componente, checklist, anti-padrões | — | — |
+| `vuetify` | tokens de tema, props descontinuadas, defaults, mobile, ApexCharts | `vuetify` | `vue3-apexcharts` |
+| `feedback` | toast, alerta persistente e inline — qual usar em cada caso | — | — |
+| `i18n` | estrutura JSON, nomenclatura de chaves, interpolação, proibições | `vue-i18n` | — |
+| `composables` | global vs view-scoped, Orquestrador + Filiações; seções de estado e validação | — | `pinia` |
+| `services` | service vs composable, padrão `useAsync`, onde cada um mora | — | `axios` |
+| `repositories` | toda chamada HTTP via repository, estrutura, tratamento de erros | — | `axios` |
+| `tests` | FIRST, pirâmide, 4 pilares, test doubles, co-localização, E2E | um runner | `vitest` |
+
+**"Exige" e "partes pressupõem" são coisas diferentes.** Sem `vue-i18n`, a regra `i18n` é inútil — o texto todo trata de `t()` e de `locales/`. Já `services` continua valendo inteira com `fetch`: a divisão service/composable não é sobre axios; só os detalhes de interceptor e 401 são. `sync` e `init` avisam nos dois casos, com peso diferente, e nenhum deles bloqueia — quem escolheu pode estar um passo antes de instalar.
 
 Os **catálogos** de `.claude/rules/project/` são derivados das regras escolhidas — não precisa listá-los.
 
