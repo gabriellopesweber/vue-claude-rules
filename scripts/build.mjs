@@ -24,7 +24,14 @@ const CATALOG_RENAME = {
   'stack.md': 'stack.md',
 }
 
-/** Termos que não podem sobrar no que vai para o cliente. */
+/**
+ * Termos que não podem sobrar no que vai para o cliente.
+ *
+ * Os nomes de projeto continuam aqui como **rede**, não como conserto. A fonte deixou de
+ * mencioná-los na v1.9.0: o pacote é a base de outros projetos, então nada nele nomeia um deles —
+ * nem em regra, nem em exemplo, nem como atribuição. Se algum destes voltar a disparar, o problema
+ * está na fonte, e é lá que se conserta.
+ */
 const LEAK_PATTERNS = [
   [/vue-claude-rules/gi, 'nome do pacote upstream'],
   [/gabriellopesweber/gi, 'conta do autor'],
@@ -32,7 +39,7 @@ const LEAK_PATTERNS = [
   [/rules\/shared\/|rules\/project\//g, 'caminho da divisão shared/project'],
   [/node_modules\//g, 'caminho de node_modules'],
   [/\bTODO\b/g, 'TODO não preenchido'],
-  [/Medispace/g, 'nome de projeto interno'],
+  [/Medispace|Velox/gi, 'nome de projeto interno'],
 ]
 
 const rewrite = (text) => {

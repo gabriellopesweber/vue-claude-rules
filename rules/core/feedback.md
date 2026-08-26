@@ -11,7 +11,7 @@ Os nomes concretos dos componentes/composables deste projeto estão em `.claude/
 
 ## 1. Toast (`useSnackbar`) → feedback transitório de ação
 `showMessage(text, type)` — toast curto que some sozinho. Para o **resultado de uma ação pontual**: salvo, excluído, atualizado, erro pontual de uma operação.
-- Ex.: "Paciente salvo", "Erro ao excluir".
+- Ex.: "Cadastro salvo", "Erro ao excluir".
 - Fire-and-forget; não exige ação do usuário. **Não** usar para avisos que precisam persistir.
 
 ## 2. Stack global (`useAlertManager` + `GlobalAlertStack`) → alerta persistente/reativo de atenção
@@ -22,7 +22,7 @@ Stack flutuante (posição configurável), montado **globalmente uma única vez*
 - **Delimitador de tempo:** passe `timeout` (ms) para qualquer alerta sumir sozinho — use em casos **pontuais/informativos**. **Não** colocar timeout em alertas **críticos** (bloqueado/expirado) nem **reativos** (conflito, estado inválido, setup incompleto) — esses devem persistir até a condição mudar.
 - **Padrão reativo:** guardar o `id` num `ref`, **dispensar o anterior** antes de mostrar outro, e dispensar quando a condição some. Em views, **dispensar no `onUnmounted`** para o alerta não vazar para outras telas.
 - **Responsivo:** vira barra inferior full-width no mobile — não deve cobrir a barra de ações do topo.
-- Bons casos: conflito de agendamento, estado fora das regras de negócio, trial/assinatura expirando, configuração faltando, pendências que exigem atenção.
+- Bons casos: conflito entre o que se tenta salvar e o que já existe, estado fora das regras de negócio, período de teste ou assinatura expirando, configuração obrigatória faltando, pendências que exigem atenção.
 
 ## 3. `InlineAlert` → mensagem ancorada a uma seção
 Para a mensagem que só faz sentido **ao lado do campo/seção** que a originou, use o componente padronizado `InlineAlert` — **não** o `<v-alert>` cru da lib. Props: `type` (success/error/warning/info), `title`, `icon`, `dense`; conteúdo via slot default.
@@ -42,7 +42,7 @@ Exibi-la é tentador porque é a linha mais curta de escrever — `catch (e) { s
 tela não os colapsa num texto único: cada motivo pede uma ação diferente, e a genérica costuma ser
 "tente de novo", que é conselho impossível de seguir quando nada muda com o tempo.
 
-> Um `400` que significa "corrija o formulário" e outro que significa "cancele a assinatura antes"
+> Um `400` que significa "corrija o formulário" e outro que significa "encerre o que está em curso antes"
 > não podem sair iguais. Se saem, o problema é do servidor, e a tela não tem como consertá-lo — ela
 > só pode escolher entre um texto genérico honesto e um específico que mente.
 

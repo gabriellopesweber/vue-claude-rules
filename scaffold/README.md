@@ -2,7 +2,7 @@
 
 Várias regras dizem *"use `useAsync`"*, *"todo `:rules` vem de `useValidation`"*, *"nunca `alert()` — use o toast"*. Isso só é acionável se a primitiva existir. Aqui está o código base de cada uma, para um projeto **adotar** em vez de reinventar.
 
-**Fonte de verdade:** as implementações vêm do Medispace-ui, o projeto onde esses padrões foram exercitados em produção. Copiar daqui é copiar o que já roda.
+**Fonte de verdade:** cada peça aqui saiu de uso em produção, não de exemplo escrito para a documentação. Copiar daqui é copiar o que já roda.
 
 ## Como usar
 

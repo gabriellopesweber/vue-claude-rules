@@ -77,7 +77,7 @@ createVuetify({
 
 *Só onde há formulário.*
 
-Em formulários internos de CRUD, `autocomplete: 'off'` como default global evita que o navegador ofereça e-mail do usuário num campo de nome de paciente.
+Em formulários internos de CRUD, `autocomplete: 'off'` como default global evita que o navegador ofereça o e-mail de quem está logado num campo que pede o nome de outra pessoa.
 
 **Exceção obrigatória — autenticação e dados pessoais do próprio usuário** precisam do valor semântico, senão gerenciadores de senha e autofill param de funcionar:
 

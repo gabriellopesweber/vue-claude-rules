@@ -25,14 +25,14 @@ Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **majo
 
 ### Corrigido
 - **Exemplos com nome de domínio de um projeto específico.** `composables.md` ilustrava o padrão
-  Orquestrador + Filiações com `useAgendaView`/`useAppointments`/`useAgendaFilters` e o Concern
-  Compartilhado com `usePatientRecords`; `tests.md` usava `useAmountAdjustment` no caminho de
-  co-localização. Nenhum deles existe fora do projeto de origem.
+  Orquestrador + Filiações e o Concern Compartilhado com composables de um domínio específico, e
+  `tests.md` fazia o mesmo no caminho de co-localização. Nenhum deles existe fora do projeto onde
+  foram escritos.
 
   Não produziam código quebrado como os tokens da v1.7.0 — são exemplos, não prescrições —, mas um
-  agente noutro projeto lendo *"o orquestrador instancia `useAppointments()`"* vai procurar o
-  arquivo. Agora são `useFeature*`/`useItems`/`useSharedConcern`, que se leem como o que sempre
-  foram: marcadores de posição.
+  agente noutro projeto lendo *"o orquestrador instancia `useX()`"* vai procurar o arquivo. Agora
+  são `useFeature*`/`useItems`/`useSharedConcern`, que se leem como o que sempre foram: marcadores
+  de posição.
 
 - **`i18n.md` ensinava o namespace de um projeto como se fosse o padrão.** A "estrutura JSON
   obrigatória" tinha `{ "workspace": { "invites": … } }` e a interpolação, `workspace.employees.remove_msg`.
@@ -43,11 +43,13 @@ Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **majo
 - **`composables.md` dava `{prefixo}_workspace_id` como exemplo de chave de `localStorage`.** Metade
   placeholder, metade domínio alheio. Virou `{prefixo}_{domínio}_id`.
 
-  Exemplos em **prosa** ("Paciente salvo", "conflito de agendamento", "campo de nome de paciente")
-  ficam: ilustram sem criar referência a procurar, e trocá-los por abstrações tornaria a regra pior.
-  A varredura completa — identificadores, caminhos, valores de config, env, endpoints, stores,
-  templates e `scaffold/` — não achou mais nada. A menção ao projeto de origem em
-  `scaffold/README.md` fica: é procedência declarada, que é o oposto de vazamento.
+  Os exemplos em **prosa** também saíram, e a linha é essa: o pacote é a **base** de outros
+  projetos, então nada nele nomeia um deles — nem como ilustração, nem como procedência. Saíram
+  também a atribuição no `scaffold/README.md` e o nome do projeto nas entradas antigas deste
+  changelog.
+
+  A varredura cobriu identificadores, caminhos, valores de config, env, endpoints, stores,
+  vocabulário de domínio, `templates/` e `scaffold/`.
 
 ## v1.8.0 — 2026-07-27
 
@@ -60,10 +62,10 @@ Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **majo
 
 ## v1.7.0 — 2026-07-27
 
-Revisão da regra do Vuetify contra o **fonte da 4.1.5** (`node_modules/vuetify/lib/composables/theme.js`), não contra a memória. A regra vinha do Medispace-ui e carregava decisões dele como se fossem do framework.
+Revisão da regra do Vuetify contra o **fonte da 4.1.5** (`node_modules/vuetify/lib/composables/theme.js`), não contra a memória. A regra vinha de um projeto consumidor e carregava decisões dele como se fossem do framework.
 
 ### Corrigido
-- **A lista de "tokens disponíveis" era em grande parte do Medispace, não do Vuetify.** `surface-container-low/lowest/high`, `outline-variant`, `secondary-container` e `on-secondary-container` são declarados no tema daquele projeto; `tertiary` não existe nem lá nem no Vuetify (zero ocorrências no pacote). Num projeto cru, seguir a lista produzia `rgb(var(--v-theme-surface-container-low))` — var inexistente, cor vazia, sem erro. Agora a regra separa **tokens do tema padrão** (lista verificada) de **tokens do projeto** (que precisam estar em `project/stack.md`), e diz que o que não está em nenhuma das duas listas não existe.
+- **A lista de "tokens disponíveis" era em grande parte do projeto de origem, não do Vuetify.** `surface-container-low/lowest/high`, `outline-variant`, `secondary-container` e `on-secondary-container` são declarados no tema daquele projeto; `tertiary` não existe nem lá nem no Vuetify (zero ocorrências no pacote). Num projeto cru, seguir a lista produzia `rgb(var(--v-theme-surface-container-low))` — var inexistente, cor vazia, sem erro. Agora a regra separa **tokens do tema padrão** (lista verificada) de **tokens do projeto** (que precisam estar em `project/stack.md`), e diz que o que não está em nenhuma das duas listas não existe.
 - **`text-on-*` não existe.** Para tokens `on-*` a classe gerada é o nome nu (`.on-surface`), não `.text-on-surface`. A regra listava classes utilitárias sem essa distinção.
 - **`text-medium-emphasis` deriva de `on-background`**, não de `on-surface` — resultado errado dentro de container de fundo contrastante. Documentada a alternativa explícita.
 - **`bg-*` já define a cor do texto** (`color: on-{token}`), então acrescentar classe de texto depois é redundante. Não estava dito.
@@ -73,7 +75,7 @@ Revisão da regra do Vuetify contra o **fonte da 4.1.5** (`node_modules/vuetify/
 - Bloco `variables` do tema (opacidades, `border-color`, `shadow-color`) — lidos como `var(--v-{nome})`, sem `theme-`. A regra dizia "adicione ao tema" sem dizer que token que não é cor mora noutro lugar.
 - `border-{token}` na tabela de classes utilitárias, e `<v-defaults-provider>` como alternativa a repetir prop num escopo.
 - `defaultTheme` do Vuetify é `'system'`: a app já segue o SO sem configuração. Antes de construir toggle, verificar se o que falta é só persistir a escolha.
-- **`init` extrai os tokens de cor customizados** do plugin e os lista em `project/stack.md`, com a ressalva de confirmar que estão declarados em todos os temas. A regra manda conferir essa lista, então ela precisa existir. Verificado nos três projetos adotados (Medispace-ui: 6 tokens; Velox: `nav`, `nav-deep`; animals: `tertiary`, `surface-container-*`).
+- **`init` extrai os tokens de cor customizados** do plugin e os lista em `project/stack.md`, com a ressalva de confirmar que estão declarados em todos os temas. A regra manda conferir essa lista, então ela precisa existir. Verificado nos três projetos adotados (6 tokens num deles; `nav`/`nav-deep` noutro; `tertiary`/`surface-container-*`).
 
 ### Corrigido (detecção)
 - A extração de nomes de tema pegava chaves aninhadas: `themes: { light: { colors: {…}, fonts: {…} } }` devolvia `light, colors, fonts, dark`. Agora só lê chaves de primeiro nível.
@@ -115,7 +117,7 @@ Os profiles eram 4 baldes, e projeto real não cabe em balde. Um one-page com i1
 ## v1.4.1 — 2026-07-27
 
 ### Corrigido
-- **Detecção de placeholder do `rules:check` gerava falso positivo em catálogo preenchido.** A heurística por forma do token acusava conteúdo legítimo: `{ mobile }` (slot prop), `{ publicRequest: true }` (objeto JS), `{ data, loading, error }` (forma de retorno) e `src/views/{feature}/` (caminho). Um gate que acusa trabalho concluído é pior que gate nenhum. Agora compara com os placeholders reais extraídos dos templates do pacote, ignorando trechos de código dos dois lados — validado contra Medispace-ui e Velox (zero falso positivo) e contra um boilerplate com `{Nome do Projeto}` por preencher (ainda pego).
+- **Detecção de placeholder do `rules:check` gerava falso positivo em catálogo preenchido.** A heurística por forma do token acusava conteúdo legítimo: `{ mobile }` (slot prop), `{ publicRequest: true }` (objeto JS), `{ data, loading, error }` (forma de retorno) e `src/views/{feature}/` (caminho). Um gate que acusa trabalho concluído é pior que gate nenhum. Agora compara com os placeholders reais extraídos dos templates do pacote, ignorando trechos de código dos dois lados — validado contra dois projetos adotados (zero falso positivo) e contra um boilerplate com `{Nome do Projeto}` por preencher (ainda pego).
 
 ## v1.4.0 — 2026-07-27
 
@@ -138,7 +140,7 @@ Correções a partir de uma adoção real feita por outro agente, num boilerplat
 ## v1.3.1 — 2026-07-27
 
 ### Corrigido
-- **`init` reintroduzia a devDependency num projeto distribuído.** Rodar `init` no Velox — que a tinha removido de propósito — trazia de volta o `github:` que quebraria o `install` de todo comprador. Agora o `init` detecta scripts baseados em `npx` e preserva o modo; `--dist` força explicitamente.
+- **`init` reintroduzia a devDependency num projeto distribuído.** Rodar `init` num projeto que a tinha removido de propósito — trazia de volta o `github:` que quebraria o `install` de todo comprador. Agora o `init` detecta scripts baseados em `npx` e preserva o modo; `--dist` força explicitamente.
 
 ### Adicionado
 - **`init --dist`** — modo distribuição: scripts via `npx`, sem devDependency, e `rules:dist` já configurado.
@@ -181,7 +183,7 @@ Até aqui a adoção só funcionava com quem já conhecia a biblioteca: o `READM
 - Erro de profile inexistente agora lista os disponíveis; regra inexistente na lista custom falha cedo.
 
 ### Alterado
-- **Profiles refeitos** a partir da matriz real de dependências dos projetos: `spa-full` (9), `spa` (8, sem tests), `site` (4), `minimal` (3). O antigo `site-static` incluía `i18n.md` e `feedback.md` em projetos que não têm vue-i18n nem stack de alertas; e `spa-full` era o único profile, apesar de o Velox não ter Vitest.
+- **Profiles refeitos** a partir da matriz real de dependências dos projetos adotados: `spa-full` (9), `spa` (8, sem tests), `site` (4), `minimal` (3). O antigo `site-static` incluía `i18n.md` e `feedback.md` em projetos que não têm vue-i18n nem stack de alertas; e `spa-full` era o único profile, apesar de o Velox não ter Vitest.
 - `core/tests.md` — projeto **sem CI** pode legitimamente gatilhar a suíte no `build:*:secure`; onde o gate roda de fato é fato do projeto (`project/stack.md`), não violação da regra.
 - `core/tests.md` — o corpo de `withSetup` saiu da regra e virou `scaffold/test-utils/withSetup.js`; a regra mostra só o uso.
 
@@ -196,7 +198,7 @@ Até aqui a adoção só funcionava com quem já conhecia a biblioteca: o `READM
 
 ## v1.0.0 — 2026-07-27
 
-Extração inicial a partir do `.claude/rules/` do Medispace-ui (9 arquivos, 1.043 linhas), separando princípio portável de inventário de projeto.
+Extração inicial a partir do `.claude/rules/` de um projeto em produção (9 arquivos, 1.043 linhas), separando princípio portável de inventário de projeto.
 
 ### Adicionado
 - `core/dry.md` — princípio de reuso, quando extrair, checklist, anti-padrões, regra de manter o catálogo vivo
@@ -214,7 +216,7 @@ Extração inicial a partir do `.claude/rules/` do Medispace-ui (9 arquivos, 1.0
 
 ### Notas de generalização
 - Catálogos de componentes/composables/repositories saíram das regras e viraram templates de `project/`
-- Nomes de domínio do Medispace (workspace, paciente, clínica) trocados por placeholders
-- Defaults do `vuetify.js`, esquema de auth, locales e scripts de build passaram para `project/stack.md` — eram a maior fonte de divergência entre Medispace-ui e Velox
+- Nomes de domínio do projeto de origem trocados por placeholders
+- Defaults do `vuetify.js`, esquema de auth, locales e scripts de build passaram para `project/stack.md` — eram a maior fonte de divergência entre os projetos consumidores
 - `alerts.md` virou `core/feedback.md` (agnóstico de lib de UI)
-- Ordem de imports absorveu o grupo de stores do Velox
+- Ordem de imports absorveu o grupo de stores de outro projeto adotado
