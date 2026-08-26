@@ -42,12 +42,23 @@ Regra prática: **muitos** testes de unidade, **alguns** de componente, **poucos
 
 > Regra de ouro (resiliência): trate a unidade como **caixa-preta**. Dê uma entrada (props/args/interação) e asserte a saída (retorno/DOM/evento). Nunca asserte estado privado nem "como" foi feito.
 
-## Localização e nomenclatura — obrigatório
-- O teste mora **no mesmo diretório** do arquivo testado (co-localização por escopo), **dentro de uma subpasta `test/`**.
-  - `src/utils/fileExport.js` → `src/utils/test/fileExport.test.js`
-  - `src/composables/{escopo}/useFeatureName.js` → `src/composables/{escopo}/test/useFeatureName.test.js`
-- Nome do arquivo: `<arquivo>.test.js` (sufixo `.test`, não `.spec`).
-- O `include` do `vitest.config.js` é `src/**/test/**/*.{test,spec}.js` — fora de uma pasta `test/` o arquivo **não roda**.
+## Localização e nomenclatura
+
+**A convenção padrão deste pacote:** o teste mora **no mesmo diretório** do arquivo testado
+(co-localização por escopo), dentro de uma subpasta `test/`, com sufixo `.test` — não `.spec`.
+
+- `src/utils/fileExport.js` → `src/utils/test/fileExport.test.js`
+- `src/composables/{escopo}/useFeatureName.js` → `src/composables/{escopo}/test/useFeatureName.test.js`
+
+Co-localizar é o que importa: teste longe do código testado envelhece sem que ninguém veja, e um
+arquivo movido deixa órfão o teste que ficou. A subpasta `test/` e o sufixo são convenção — outra
+igualmente consistente serve, desde que **uma** seja escolhida.
+
+> ⚠️ **O que é obrigatório é o `include` bater com a convenção escolhida.** Um `include` restrito a
+> `src/**/test/**/*.{test,spec}.js` não enxerga arquivo fora de uma pasta `test/`; o default do
+> Vitest, ao contrário, varre a árvore inteira e pega o que a convenção proibiria. Nos dois casos a
+> divergência **não dá erro** — o teste simplesmente não roda, ou roda de onde não devia, e a suíte
+> fica verde de menos. O padrão em vigor está em `.claude/rules/project/stack.md`.
 
 ## O que testar (prioridade) — começar pequeno, alto valor
 1. **Lógica pura de regra de negócio**: `src/validations/rules/*`, composables de cálculo, utils. Determinístico, sem mock pesado → maior ROI.

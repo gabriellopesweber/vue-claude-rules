@@ -1,6 +1,12 @@
 # Regras de Componentes Vue
 
-## Estrutura (sempre nesta ordem)
+## Estrutura — a ordem padrão deste pacote
+
+> **É default, não regra.** A ordem abaixo é a que este pacote adota quando o projeto não tem outra;
+> ela agrupa por *distância do domínio*, o que faz a origem de cada import ser óbvia na leitura. Um
+> projeto que já tenha uma convenção diferente formalizada no lint **mantém a dele** — em conflito,
+> `project/` vence `shared/`. O que não é negociável é haver **uma** ordem, aplicada pela ferramenta
+> e não pela memória.
 ```vue
 <script setup>
 // 1. Vue core + key ecosystem (vue, vue-router, vue-i18n, dayjs, pinia)
@@ -32,9 +38,11 @@ const { t } = useI18n() // sempre primeiro destructure
 <style scoped>…</style> <!-- apenas se necessário -->
 ```
 
-**Regra:** uma linha em branco entre cada grupo; componentes `@/components/` vêm sempre **por último**.
+Uma linha em branco entre cada grupo; componentes `@/components/` vêm por último.
 
-> O projeto pode ter um `simple-import-sort` que formaliza essa ordem — em caso de dúvida, rode `pnpm lint:fix` e deixe a ferramenta decidir.
+> **Quem decide é o lint, não este arquivo.** Onde houver `simple-import-sort` ou equivalente
+> configurado, ele é a fonte de verdade — rode o autofix e deixe a ferramenta ordenar. Ordem de
+> import é exatamente o tipo de convenção que não deve consumir atenção humana nem revisão de PR.
 
 ## Props, emits e v-model
 ```js

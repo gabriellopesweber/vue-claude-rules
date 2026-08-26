@@ -73,9 +73,45 @@ createVuetify({
 
 `density` aceita `'default'`, `'comfortable'` ou `'compact'` — a prop `dense` não existe mais (sobrevive só no `VRow`, já deprecada, apontando para `density`).
 
-## Autocomplete
+## Responsividade
 
-*Só onde há formulário.*
+```js
+import { useDisplay } from 'vuetify'
+const { mobile, smAndDown } = useDisplay()
+```
+
+Ocultar por breakpoint tem duas famílias, ambas válidas: `hidden-md-and-up` / `hidden-sm-and-down`, ou as de display (`d-none d-md-flex`). Prefira uma e mantenha.
+
+**Empilhar as actions de um dialog em mobile: use `flex-column-reverse`, não reordene o markup.** O
+botão de confirmação é o último no DOM, que é onde ele deve estar para a ordem de foco do teclado —
+e no mobile ele precisa aparecer em cima. A classe resolve a apresentação sem tocar na ordem que o
+teclado e o leitor de tela seguem; trocar os botões de lugar no template resolveria o visual e
+quebraria os dois.
+
+**Regra:** responsividade mora no componente base compartilhado, não em cada consumidor. Se o
+dialog/header base já trata mobile, **não** repita `:block="mobile"` nem `:size="mobile ? … : …"`
+nos filhos — é o mesmo raciocínio de `dry.md`.
+
+## Tema
+
+*Só onde há mais de um tema.*
+
+O `defaultTheme` do Vuetify é `'system'`: sem configurar nada, a app já segue o modo do sistema operacional. Antes de construir toggle, veja se o que falta é só persistir a escolha do usuário.
+
+- **Trocar de tema:** `theme.change('dark')`. Atribuir `theme.global.name.value` está **deprecado** — o próprio Vuetify emite aviso apontando para `change()`.
+- Encapsule a troca num composable (`useAppTheme` ou equivalente) e chame-o das views, em vez de espalhar `useTheme()`. É lá que mora a persistência e a transição.
+- Toda cor nova precisa entrar nos **dois** temas. Token declarado só no light desaparece no dark, sem erro.
+
+## Fora do tema — integrações
+
+> **Isto não é regra do Vuetify.** São duas coisas que esbarram no tema e por isso vivem aqui: uma
+> é do navegador, a outra é de bibliotecas que recebem cor por valor. Ficam separadas porque um
+> arquivo que diz a verdade sobre o framework não pode emprestar essa autoridade ao que é escolha
+> de projeto.
+
+### `autocomplete` nos campos
+
+*Só onde há formulário. Vale igual fora do Vuetify — o que é da lib é só o `defaults`.*
 
 Em formulários internos de CRUD, `autocomplete: 'off'` como default global evita que o navegador ofereça o e-mail de quem está logado num campo que pede o nome de outra pessoa.
 
@@ -91,42 +127,9 @@ Em formulários internos de CRUD, `autocomplete: 'off'` como default global evit
 
 Nunca `autocomplete="on"` — sempre o valor semântico. O navegador ignora `off` em vários casos de propósito; `off` é redução de ruído, não garantia.
 
-## Responsividade
+### Biblioteca de gráfico que não lê CSS var
 
-```js
-import { useDisplay } from 'vuetify'
-const { mobile, smAndDown } = useDisplay()
-```
-
-Ocultar por breakpoint tem duas famílias, ambas válidas: `hidden-md-and-up` / `hidden-sm-and-down`, ou as de display (`d-none d-md-flex`). Prefira uma e mantenha.
-
-Grid: `cols="12"` na base, `md="6"` para duas colunas, `lg="4"` para três.
-
-**Padrão para actions de dialog em mobile:**
-```html
-<v-card-actions :class="mobile ? 'flex-column-reverse pa-4 ga-2' : 'px-6 py-4'">
-  <v-spacer v-if="!mobile" />
-  <v-btn variant="text" :block="mobile" @click="cancel">…</v-btn>
-  <v-btn variant="flat" :block="mobile" @click="confirm">…</v-btn>
-</v-card-actions>
-```
-`flex-column-reverse` põe o botão de confirmação (último no DOM) no topo em mobile, mantendo a ordem de foco do teclado.
-
-**Regra:** responsividade mora no componente base compartilhado, não em cada consumidor. Se o dialog/header base já trata mobile, **não** repita `:block="mobile"` nem `:size="mobile ? … : …"` nos filhos — é o mesmo raciocínio de `dry.md`.
-
-## Tema
-
-*Só onde há mais de um tema.*
-
-O `defaultTheme` do Vuetify é `'system'`: sem configurar nada, a app já segue o modo do sistema operacional. Antes de construir toggle, veja se o que falta é só persistir a escolha do usuário.
-
-- **Trocar de tema:** `theme.change('dark')`. Atribuir `theme.global.name.value` está **deprecado** — o próprio Vuetify emite aviso apontando para `change()`.
-- Encapsule a troca num composable (`useAppTheme` ou equivalente) e chame-o das views, em vez de espalhar `useTheme()`. É lá que mora a persistência e a transição.
-- Toda cor nova precisa entrar nos **dois** temas. Token declarado só no light desaparece no dark, sem erro.
-
-## ApexCharts
-
-*Só onde `vue3-apexcharts` já é dependência. Não é recomendação de biblioteca.*
+*Escrito contra `vue3-apexcharts`, que é o caso já exercitado. Não é recomendação de biblioteca — o problema aparece em qualquer uma que receba cor por valor.*
 
 O ApexCharts não lê CSS var: precisa de cor resolvida. Daí o padrão:
 

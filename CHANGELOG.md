@@ -23,7 +23,43 @@ Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **majo
   aponta para `project/` em vez de prescrever. É a mesma linha que a v1.7.0 traçou nos tokens do
   Vuetify, aplicada antes de doer.
 
+### Alterado
+- **Passada de voz: default sugerido deixou de ser escrito como fato sobre a ferramenta.** As regras
+  misturavam três tipos de afirmação, e só duas pertencem a um pacote-base: *fato verificável sobre a
+  ferramenta* (`theme.global.name.value` está deprecado), *princípio com a razão junto* (cor só por
+  token, senão o dark quebra em silêncio) e *convenção de um projeto* (a ordem dos imports).
+
+  O problema não era falsidade — os fatos foram reverificados contra o fonte e conferem. Era
+  **autoridade emprestada**: a linha que diz a verdade sobre o framework empresta credibilidade à
+  seguinte, que só diz o gosto de alguém. Agora as três se distinguem na leitura.
+
+  - `vue.md`: os sete grupos de import viram *"a ordem padrão deste pacote"*, com a precedência
+    explícita — projeto que já tem a sua mantém a dele. E quem decide passa a ser o lint, não o
+    arquivo: ordem de import não deve consumir revisão de PR.
+  - `composables.md`: *"regra obrigatória"* → *"obrigatório onde a camada existe"*. O título dizia
+    obrigatório e o preâmbulo dizia "se não existe, não instale" — o título contradizia o escopo.
+  - `i18n.md`: a estrutura JSON ganhou a **razão** de ser obrigatória (sem o invólucro, dois arquivos
+    com a mesma chave de topo se sobrescrevem, e o que se perde depende da ordem do glob). Qual
+    namespace usar continua sendo escolha do projeto.
+
 ### Corrigido
+- **`tests.md` afirmava a config de um projeto como se fosse comportamento do Vitest.** *"O `include`
+  do `vitest.config.js` é `src/**/test/**/*.{test,spec}.js`"* — não é; é o de quem escreveu. O
+  default do Vitest varre a árvore inteira. Agora o obrigatório é o `include` **bater** com a
+  convenção escolhida, com o modo de falha escrito: divergir não dá erro, só deixa o teste sem rodar
+  — ou rodando de onde a convenção proibiria.
+
+- **`vuetify.md` carregava ~40 de 154 linhas que não são sobre Vuetify.** O grid
+  (`cols=12`/`md=6`/`lg=4`) saiu: é aritmética, não regra, e sob aquele título lia-se como prescrição
+  de breakpoint. As actions de dialog perderam o `pa-4 ga-2` de um projeto e ficaram com o que era
+  insight portável — `flex-column-reverse` põe o confirmar em cima **sem** mexer na ordem do DOM, que
+  é a ordem de foco do teclado.
+
+  `autocomplete` e a integração com biblioteca de gráfico foram para **"Fora do tema — integrações"**,
+  seção que abre dizendo não ser regra do Vuetify. A primeira é do navegador e vale em qualquer lib;
+  a segunda, de bibliotecas que recebem cor por valor. Separadas porque um arquivo que diz a verdade
+  sobre o framework não pode emprestar essa autoridade ao resto.
+
 - **Exemplos com nome de domínio de um projeto específico.** `composables.md` ilustrava o padrão
   Orquestrador + Filiações e o Concern Compartilhado com composables de um domínio específico, e
   `tests.md` fazia o mesmo no caminho de co-localização. Nenhum deles existe fora do projeto onde

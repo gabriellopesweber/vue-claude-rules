@@ -10,15 +10,20 @@
 >
 > **Antes de criar qualquer composable, consulte o catálogo do projeto** (`.claude/rules/project/catalog-composables.md`) — a lista do que já existe é verdade local, não vive aqui.
 
-## Validação de formulários — regra obrigatória
+## Validação de formulários — obrigatório onde a camada existe
 
-*(onde a camada `src/validations/` existe — ver escopo acima)*
+*Se `src/validations/` não existe neste projeto, esta seção inteira não se aplica: as regras da lib
+de UI bastam até as validações começarem a repetir entre formulários. Ver o escopo no topo.*
 
 Todo `:rules` **deve** vir de `useValidation().validate(labelKey, 'regra1|regra2')` — nunca regra inline anônima. Se a regra não existir, **criar o handler** em `src/validations/rules/<nome>.js`, exportar em `src/validations/index.js` e adicionar a mensagem em `validation.json` (`validation.<nome>`).
 
 Handlers recebem `(value, args)` → boolean e tratam vazio como válido (deixa `required` cuidar disso). Atenção: `min`/`max` são **comprimento de string** (caracteres); para valor numérico use `minValue`/`maxValue` (ex.: `validate('...label', 'minValue:0|maxValue:100')`).
 
-## Persistência via Pinia — regra obrigatória
+## Persistência via Pinia — obrigatório onde Pinia existe
+
+*Sem Pinia no projeto, não o instale por causa desta seção: um `ref` no módulo ou um `localStorage`
+encapsulado num composable resolve. O que a seção impede é `localStorage` **espalhado**, não a
+ausência de Pinia.*
 
 **Nunca usar `localStorage` diretamente** em composables, views, componentes, `api.js` ou guards.
 Toda persistência passa por `pinia-plugin-persistedstate`. Configure na store:
