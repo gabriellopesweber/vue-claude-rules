@@ -28,6 +28,43 @@ Stack flutuante (posição configurável), montado **globalmente uma única vez*
 Para a mensagem que só faz sentido **ao lado do campo/seção** que a originou, use o componente padronizado `InlineAlert` — **não** o `<v-alert>` cru da lib. Props: `type` (success/error/warning/info), `title`, `icon`, `dense`; conteúdo via slot default.
 - Ex.: "excede o saldo do plano" dentro do card, badge de estado no formulário, info contextual de um campo. Mover esses para o stack flutuante **piora** a leitura (descola do contexto) — manter inline.
 
+## O texto da mensagem de erro
+
+*Vale onde o projeto consome uma API e traduz a interface. Sem uma das duas coisas, só a primeira
+regra se aplica.*
+
+**A mensagem técnica do servidor não vai para a tela.** Ela é escrita para quem depura: em inglês
+quase sempre, com vocabulário de implementação, e numa interface traduzida chega no idioma errado.
+Exibi-la é tentador porque é a linha mais curta de escrever — `catch (e) { show(e.response?.data?.message) }`
+— e por isso reincide.
+
+**Recusa distinguível chega com redação própria.** Quando o servidor sabe *qual* dos motivos foi, a
+tela não os colapsa num texto único: cada motivo pede uma ação diferente, e a genérica costuma ser
+"tente de novo", que é conselho impossível de seguir quando nada muda com o tempo.
+
+> Um `400` que significa "corrija o formulário" e outro que significa "cancele a assinatura antes"
+> não podem sair iguais. Se saem, o problema é do servidor, e a tela não tem como consertá-lo — ela
+> só pode escolher entre um texto genérico honesto e um específico que mente.
+
+**Resolva a mensagem por convenção, com guarda de existência.** Em vez de um mapa literal por tela
+— que diverge do vizinho —, monte a chave a partir do discriminador que o erro carrega e **confirme
+que ela existe** antes de usá-la, caindo num texto de reserva quando não existir.
+
+A guarda é o ponto, não um detalhe: numa lib de i18n típica, pedir uma chave inexistente devolve o
+próprio caminho da chave, e o usuário lê `errors.foo_SOMETHING_NEW` na tela — pior que o texto
+genérico. Sem ela, o código precisa de uma allow-list mantida à mão, que ninguém lembra de atualizar
+e cujo esquecimento não dá erro.
+
+> **O que é inventário, e por isso não está aqui:** qual campo do erro carrega o discriminador
+> (`code`, status, `extensions`…), o formato da chave, e o nome do composable que faz a resolução.
+> Isso muda com o backend e com a lib de i18n — está em `.claude/rules/project/`.
+
+> [!warning] Chave montada em tempo de execução some do `grep`
+> `errors.foo_${code}` não é encontrada por busca textual. A chave parece órfã numa limpeza de
+> locale, e apagá-la não quebra nada visível — só faz a mensagem específica virar a genérica, em
+> silêncio. Onde essa resolução for adotada, **um teste que afirme a existência das variantes em uso
+> é o que substitui o grep**.
+
 ## Resumo de decisão
 | Mensagem | Mecanismo |
 |---|---|

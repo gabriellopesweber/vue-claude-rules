@@ -45,7 +45,7 @@ Regra prática: **muitos** testes de unidade, **alguns** de componente, **poucos
 ## Localização e nomenclatura — obrigatório
 - O teste mora **no mesmo diretório** do arquivo testado (co-localização por escopo), **dentro de uma subpasta `test/`**.
   - `src/utils/fileExport.js` → `src/utils/test/fileExport.test.js`
-  - `src/composables/records/useAmountAdjustment.js` → `src/composables/records/test/useAmountAdjustment.test.js`
+  - `src/composables/{escopo}/useFeatureName.js` → `src/composables/{escopo}/test/useFeatureName.test.js`
 - Nome do arquivo: `<arquivo>.test.js` (sufixo `.test`, não `.spec`).
 - O `include` do `vitest.config.js` é `src/**/test/**/*.{test,spec}.js` — fora de uma pasta `test/` o arquivo **não roda**.
 

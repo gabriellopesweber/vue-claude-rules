@@ -113,13 +113,13 @@ Quando uma view acumula muitas responsabilidades (estado de diálogos, filtros, 
 
 ```js
 // orquestrador (resumo)
-export function useAgendaView() {
-  const { appointments, fetchAppointments, ... } = useAppointments()
-  const calendar = useAgendaCalendar({ mobile, hours })
-  const fetchRange = () => fetchAppointments(calendar.buildRange())
-  const filters = useAgendaFilters({ appointments, viewMode: calendar.viewMode })
-  const dialogs = useAgendaDialogs()
-  const operations = useAgendaOperations({ dialogs, fetchRange, updateAppointment, ... })
+export function useFeatureView() {
+  const { items, fetchItems, updateItem, ... } = useItems()
+  const calendar = useFeatureCalendar({ mobile, hours })
+  const fetchRange = () => fetchItems(calendar.buildRange())
+  const filters = useFeatureFilters({ items, viewMode: calendar.viewMode })
+  const dialogs = useFeatureDialogs()
+  const operations = useFeatureOperations({ dialogs, fetchRange, updateItem, ... })
   // watchers + onMounted aqui
   return { ...calendar, ...filters, ...dialogs, ...operations, /* + state de domínio */ }
 }
@@ -135,7 +135,7 @@ export function useAgendaView() {
 Quando **dois componentes repetem a mesma lógica** mas diferem só na **fonte de dados/persistência**, extraia um composable de concern e **injete as primitivas** que variam, em vez de duplicar.
 
 ```js
-const records = usePatientRecords({
+const records = useSharedConcern({
   evolutions,                                  // ref/computed com a lista
   onCreate: (payload) => createEvolution(id.value, payload),
   onUpdate: (id, data) => updateEvolution(...),

@@ -2,6 +2,41 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.9.0 — 2026-08-26
+
+### Adicionado
+- **`feedback.md` ganha *"O texto da mensagem de erro"*.** Três invariantes que faltavam: a mensagem
+  técnica do servidor não vai para a tela; recusa distinguível chega com redação própria; e a
+  resolução se faz **por convenção com guarda de existência**, não por mapa literal repetido em cada
+  tela.
+
+  A guarda é o ponto e por isso está escrita como tal: numa lib de i18n típica, pedir chave
+  inexistente devolve o próprio caminho da chave, e o usuário lê `errors.foo_SOMETHING_NEW` na tela
+  — pior que o texto genérico. Sem ela o código precisa de allow-list mantida à mão, cujo
+  esquecimento não dá erro nenhum.
+
+  Vem com o aviso de que **chave montada em tempo de execução some do `grep`**: ela parece órfã numa
+  limpeza de locale, e apagá-la não quebra nada visível.
+
+  **O mecanismo ficou de fora de propósito.** Qual campo do erro carrega o discriminador, o formato
+  da chave e o nome do composable que resolve mudam com o backend e com a lib de i18n — a seção
+  aponta para `project/` em vez de prescrever. É a mesma linha que a v1.7.0 traçou nos tokens do
+  Vuetify, aplicada antes de doer.
+
+### Corrigido
+- **Exemplos com nome de domínio de um projeto específico.** `composables.md` ilustrava o padrão
+  Orquestrador + Filiações com `useAgendaView`/`useAppointments`/`useAgendaFilters` e o Concern
+  Compartilhado com `usePatientRecords`; `tests.md` usava `useAmountAdjustment` no caminho de
+  co-localização. Nenhum deles existe fora do projeto de origem.
+
+  Não produziam código quebrado como os tokens da v1.7.0 — são exemplos, não prescrições —, mas um
+  agente noutro projeto lendo *"o orquestrador instancia `useAppointments()`"* vai procurar o
+  arquivo. Agora são `useFeature*`/`useItems`/`useSharedConcern`, que se leem como o que sempre
+  foram: marcadores de posição.
+
+  Exemplos em **prosa** ("Paciente salvo", "conflito de agendamento") ficam: ilustram sem criar
+  referência a procurar, e trocá-los por abstrações tornaria a regra pior.
+
 ## v1.8.0 — 2026-07-27
 
 ### Corrigido
