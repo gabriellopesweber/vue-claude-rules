@@ -34,8 +34,20 @@ Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **majo
   arquivo. Agora são `useFeature*`/`useItems`/`useSharedConcern`, que se leem como o que sempre
   foram: marcadores de posição.
 
-  Exemplos em **prosa** ("Paciente salvo", "conflito de agendamento") ficam: ilustram sem criar
-  referência a procurar, e trocá-los por abstrações tornaria a regra pior.
+- **`i18n.md` ensinava o namespace de um projeto como se fosse o padrão.** A "estrutura JSON
+  obrigatória" tinha `{ "workspace": { "invites": … } }` e a interpolação, `workspace.employees.remove_msg`.
+  Pior que os exemplos de composable: é um bloco JSON feito para copiar, e quem copiasse levaria
+  `workspace` como namespace raiz achando que a regra o exigia. Agora é `settings.members`, que
+  qualquer app tem.
+
+- **`composables.md` dava `{prefixo}_workspace_id` como exemplo de chave de `localStorage`.** Metade
+  placeholder, metade domínio alheio. Virou `{prefixo}_{domínio}_id`.
+
+  Exemplos em **prosa** ("Paciente salvo", "conflito de agendamento", "campo de nome de paciente")
+  ficam: ilustram sem criar referência a procurar, e trocá-los por abstrações tornaria a regra pior.
+  A varredura completa — identificadores, caminhos, valores de config, env, endpoints, stores,
+  templates e `scaffold/` — não achou mais nada. A menção ao projeto de origem em
+  `scaffold/README.md` fica: é procedência declarada, que é o oposto de vazamento.
 
 ## v1.8.0 — 2026-07-27
 

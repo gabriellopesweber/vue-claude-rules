@@ -51,7 +51,7 @@ export function useFeature() {
 }
 ```
 
-**Convenção de chaves localStorage:** prefixo do projeto + nome do domínio (ex.: `{prefixo}_workspace_id`, `{prefixo}_ui`). O prefixo em uso está em `.claude/rules/project/stack.md`.
+**Convenção de chaves localStorage:** prefixo do projeto + nome do domínio (ex.: `{prefixo}_ui`, `{prefixo}_{domínio}_id`). O prefixo em uso está em `.claude/rules/project/stack.md`.
 
 **Segurança:** credencial de sessão (access token, dados do usuário) **nunca** entra em localStorage/sessionStorage — vive em memória (access token) ou em cookie HttpOnly (refresh token), inacessível a JS.
 
