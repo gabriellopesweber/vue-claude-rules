@@ -6,7 +6,7 @@
 > |---|---|---|
 > | Persistência via Pinia | `pinia` + `pinia-plugin-persistedstate` | Não instale Pinia para guardar uma preferência — `ref` no módulo ou `localStorage` encapsulado num composable resolve. A regra existe para impedir `localStorage` **espalhado**, não para exigir Pinia. |
 > | Validação via `useValidation` | `src/validations/` + `validation.json` | Adote o código base de `scaffold/` (`useValidation.js` + `validations/` + `locales/validation.json`) quando as regras começarem a repetir entre formulários; até lá, as regras da lib de UI bastam. |
-> | Orquestrador + Filiações | uma view genuinamente pesada | Padrão para views que já doem. Aplicar numa view simples é overhead. |
+> | Orquestrador + Filiações | uma view genuinamente pesada | Padrão para views que já doem. Aplicar numa view simples é overhead — o que vale para toda view é a seção *"O que pode ficar no `<script setup>`"*, um degrau abaixo. |
 >
 > **Antes de criar qualquer composable, consulte o catálogo do projeto** (`.claude/rules/project/catalog-composables.md`) — a lista do que já existe é verdade local, não vive aqui.
 
@@ -107,6 +107,57 @@ export function useFeatureName() {
 | Orquestração específica de **uma** view (não reutilizável) | **co-localizado**: `src/views/{feature}/composables/` |
 
 Composables **view-scoped** seguem a mesma co-localização que os services locais (`src/views/{feature}/services/`): ficam junto da única view que os usa. São **factory composables** — criam o estado **dentro** da função (`ref` local, não no nível do módulo), pois há uma instância por montagem da view, não um singleton global.
+
+## O que pode ficar no `<script setup>`
+
+*Vale para **todo** componente, e não só para as views pesadas da seção seguinte.*
+
+O `<script setup>` guarda o **fio** entre o composable e o template. Se uma linha responde
+"como isto funciona" em vez de "o que esta tela usa", ela pertence a um composable.
+
+| Fica no `.vue` | Vai para um composable |
+|---|---|
+| `import` de componentes filhos | qualquer `ref`/`reactive` que o template não leia diretamente |
+| `defineProps` / `defineEmits` / `defineModel` | `computed` derivado de rota, store ou resposta de API |
+| `const { t } = useI18n()` | handler de submit, de clique, de retentativa |
+| **uma** desestruturação de `use{Feature}()` | `onMounted` / `watch` / `onUnmounted` |
+| ref de template (`useTemplateRef`) que o composable recebe | `try/catch`, sequência de chamadas, mapeamento de erro |
+
+```vue
+<script setup>
+import { useI18n } from 'vue-i18n'
+
+import { useLoginForm } from '@/views/auth/composables/useLoginForm'
+
+const { t } = useI18n()
+const {
+  email,
+  password,
+  isBusy,
+  errorMessage,
+  submit,
+} = useLoginForm()
+</script>
+```
+
+**O ganho não é estética, e o formulário simples é o caso que prova.** Um `submit` de seis
+linhas dentro do `.vue` só é testável montando o componente: para afirmar que a falha **não**
+navega, o teste precisa de jsdom, de Vuetify, de um router dublê e de um clique. O mesmo
+`submit` num composable é uma função — entrada, saída, uma asserção. A regra existe para que
+a decisão de negócio seja testável sem DOM, e é por isso que ela não espera a view ficar
+pesada.
+
+**Um `computed` de uma linha que só formata para o template pode ficar.** O corte é
+"depende de rota, store, rede ou tempo?" — não a contagem de linhas.
+
+> ⚠️ **Composable view-scoped por tela, e não um por pasta.** `useAuthForm` servindo entrar,
+> cadastrar e recuperar acaba com três ramos de `if` e um retorno com campos que metade dos
+> consumidores ignora. A co-localização já dá a proximidade; o que se ganha juntando é uma
+> abstração que ninguém pediu.
+
+> **Isto não contradiz "não crie camada por antecipação".** Não se está criando uma camada —
+> ela já existe no projeto assim que houver um composable. Extrair um a mais é mover código
+> para onde a camada já está, não abrir uma nova.
 
 ## Padrão Orquestrador + Filiações (views pesadas)
 

@@ -44,6 +44,34 @@ Uma linha em branco entre cada grupo; componentes `@/components/` vêm por últi
 > configurado, ele é a fonte de verdade — rode o autofix e deixe a ferramenta ordenar. Ordem de
 > import é exatamente o tipo de convenção que não deve consumir atenção humana nem revisão de PR.
 
+## Desestruturação longa quebra em linhas
+
+Três nomes ou mais: um por linha.
+
+```js
+// ✅
+const {
+  form,
+  isBusy,
+  errorCode,
+  errorMessage,
+  submit,
+} = useRegisterForm()
+
+// ❌ — cabe na linha, e é justamente esse o problema
+const { form, isBusy, errorCode, errorMessage, submit } = useRegisterForm()
+```
+
+Não é gosto, e o motivo aparece no **diff**: acrescentar um nome reescreve a linha inteira,
+e a revisão passa a comparar duas linhas longas em vez de ver um `+` de uma palavra. Com uma
+por linha, `git blame` também responde quando cada valor passou a ser usado.
+
+> **Quem decide é o lint.** Com `@stylistic`, a quebra é `object-curly-newline` com
+> `ObjectPattern: { minProperties: 3 }`, e `object-property-newline` impede o meio-termo em
+> que parte dos nomes fica colada na chave e o resto desce. Vale para o **padrão**, e não
+> para o literal: objeto de opções curto na mesma linha continua legível, e forçá-lo a
+> quebrar encheria a base de ruído.
+
 ## Props, emits e v-model
 ```js
 const props = defineProps({
@@ -58,6 +86,7 @@ const dialog = defineModel({ type: Boolean, default: false }) // para v-model
 ## Regras críticas
 - **Sem Options API** — `<script setup>` apenas; nunca `export default {}`
 - **Sem lógica no `<template>`** — usar `computed` para valores derivados
+- **Sem lógica no `<script setup>`** — ele guarda o fio entre o composable e o template; o que responde *como funciona* mora num composable. O corte está em `composables.md` § *"O que pode ficar no `<script setup>`"*
 - Funções: `const handleAction = () => {}` no topo (sem bloco `methods`)
 - Eventos: kebab-case (`update:modelValue`, `confirm`, `cancel`)
 - **Sem comentários** salvo lógica genuinamente não óbvia
