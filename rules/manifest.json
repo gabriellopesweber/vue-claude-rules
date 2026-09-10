@@ -7,7 +7,7 @@
       "id": "vue",
       "path": "vue/vue.md",
       "title": "Componentes Vue",
-      "summary": "script setup, ordem de imports, props/emits/v-model, camadas, nomenclatura",
+      "summary": "script setup sem lógica, ordem de imports, desestruturação em linhas, props/emits/v-model, camadas",
       "requires": [],
       "assumes": [],
       "catalogs": []
@@ -66,7 +66,7 @@
       "id": "composables",
       "path": "vue/composables.md",
       "title": "Composables e estado",
-      "summary": "global vs view-scoped, Orquestrador + Filiações; seções de Pinia e validação",
+      "summary": "o que pode ficar no script setup, global vs view-scoped, Orquestrador + Filiações; seções de Pinia e validação",
       "requires": [],
       "assumes": [
         "pinia"

@@ -2,6 +2,47 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.10.0 — 2026-09-10
+
+### Adicionado
+- **`composables.md` ganha *"O que pode ficar no `<script setup>`"*.** Faltava o degrau de baixo da
+  escada. O pacote já dizia *"views devem ser finas"* e já tinha o Orquestrador + Filiações — mas
+  este último está explicitamente escrito para **views pesadas**, e diz que aplicá-lo numa view
+  simples é overhead. Entre "fina" (vago) e "orquestrador" (grande demais) não havia nada, e o
+  formulário de duas linhas ficava com o `submit`, o `try/catch` e o mapeamento de erro dentro do
+  `.vue` sem violar regra nenhuma.
+
+  A seção nova é uma tabela do que fica e do que sai, e vale para **todo** componente. O critério
+  não é contagem de linhas: é *"depende de rota, store, rede ou tempo?"*.
+
+  **A razão está escrita como razão, e não como estética.** Um `submit` de seis linhas dentro do
+  `.vue` só é testável montando o componente — para afirmar que a falha **não** navega, o teste
+  precisa de jsdom, de Vuetify, de um router dublê e de um clique. O mesmo `submit` num composable é
+  uma função: entrada, saída, uma asserção. É por isso que a regra não espera a view ficar pesada.
+
+  Vem com dois avisos que só aparecem depois de aplicar: **um composable por tela, e não um por
+  pasta** (`useAuthForm` servindo entrar, cadastrar e recuperar vira três ramos de `if` e um retorno
+  que metade dos consumidores ignora); e que isto **não** contradiz "não crie camada por
+  antecipação" — a camada já existe assim que houver um composable, e extrair mais um é mover código
+  para onde ela está.
+
+- **`vue.md` ganha *"Desestruturação longa quebra em linhas"*.** Três nomes ou mais, um por linha. O
+  motivo é o **diff**: acrescentar um nome reescrevia a linha inteira, e a revisão passava a comparar
+  duas linhas longas em vez de ver um `+` de uma palavra.
+
+  Escrita como a ordem dos imports já era — **quem decide é o lint** (`object-curly-newline` com
+  `ObjectPattern: { minProperties: 3 }`, mais `object-property-newline` para impedir o meio-termo),
+  e não a memória de quem revisa. Vale para o **padrão**, e não para o literal: objeto de opções
+  curto na mesma linha continua legível, e forçá-lo a quebrar encheria a base de ruído.
+
+### Alterado
+- **`vue.md` § "Regras críticas" ganha "Sem lógica no `<script setup>`"**, ao lado do "sem lógica no
+  `<template>`" que já existia — com o corte apontando para a seção nova. A lista das críticas era o
+  único lugar que alguém lê inteiro, e a regra nova não podia ficar só na página de composables.
+- **A tabela de escopo de `composables.md`** passa a dizer que o Orquestrador é o degrau de cima, e
+  aponta o de baixo. Sem isso, "aplicar numa view simples é overhead" continuava lendo como
+  "view simples não precisa extrair nada".
+
 ## v1.9.0 — 2026-08-26
 
 ### Adicionado
