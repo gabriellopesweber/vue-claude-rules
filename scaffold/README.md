@@ -29,6 +29,7 @@ Depois de adotar, registre no `.claude/rules/project/catalog-composables.md` —
 | `components/ui/GlobalSnackbar.vue` | `feedback.md` | `useSnackbar` | montar 1x no `App.vue` |
 | `components/ui/GlobalAlertStack.vue` | `feedback.md` | `useAlertManager`, store `ui` | montar 1x no `App.vue` |
 | `components/ui/InlineAlert.vue` | `feedback.md` | — | — |
+| `skills/SKILL.template.md` | `skills.md` | — | não se copia à mão: `npx vue-claude-rules skill "<o que se pede>"` |
 
 ## Adote sob demanda, não em bloco
 
@@ -40,6 +41,10 @@ Copiar as 22 peças num projeto que precisa de duas é o oposto do que `dry.md` 
 - **`useValidation` + `validations/`** — quando as regras de campo começarem a repetir entre formulários. Um formulário só não justifica.
 - **`useAppTheme` + `stores/ui`** — quando houver dark/light de verdade.
 - **`test-utils/withSetup`** — quando testar um composable com `onMounted`/`onUnmounted` ou watcher `pre`.
+- **`skills/SKILL.template.md`** — quando o **mesmo** procedimento de vários passos for pedido pela
+  segunda vez. Na primeira não é procedimento, é uma tarefa. O gerador
+  (`npx vue-claude-rules skill "<o que se pede>"`) escreve o esqueleto no lugar certo; o critério de
+  quando vale a pena está na regra `skills`.
 
 ## Dependências por peça
 
@@ -51,6 +56,7 @@ GlobalAlertStack  → useAlertManager + pinia (store ui, para alertPosition)
 GlobalSnackbar    → useSnackbar
 InlineAlert       → nada
 withSetup         → vue + jsdom no Vitest
+SKILL.template    → nada (é markdown; o destino é .claude/skills/, não src/)
 ```
 
 `useSnackbar`, `useAlertManager` e `InlineAlert` são autocontidos — dá para adotar só eles.

@@ -124,6 +124,15 @@
       ]
     },
     {
+      "id": "skills",
+      "path": "core/skills.md",
+      "title": "Skills do agente",
+      "summary": "quando um procedimento vira skill (e quando é regra ou script), anatomia do SKILL.md, description como gatilho, parada antes do irreversível",
+      "requires": [],
+      "assumes": [],
+      "catalogs": []
+    },
+    {
       "id": "tests",
       "path": "core/tests.md",
       "title": "Testes",
