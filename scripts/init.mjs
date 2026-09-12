@@ -353,9 +353,11 @@ const buildClaudeMd = (pkg, stack, refs, selection, distMode) => {
 
   const rows = [
     ['Criar/editar componentes `.vue`, props, emits, template', 'vue.md', 'catalog-ui.md'],
+    ['Escolher API do Vue: ref/reactive, computed/watch, v-if/v-show, performance', 'vue-api.md', 'catalog-composables.md'],
     ['Reutilização de UI, evitar duplicação, extrair componentes', 'dry.md', 'catalog-ui.md'],
     ['Feedback ao usuário: toast, alerta persistente, inline', 'feedback.md', 'catalog-ui.md'],
     [`Cores, tokens de tema, layout mobile, componentes ${uiLib}`, 'vuetify.md', 'stack.md'],
+    [`Escolher o componente ${uiLib} para o trabalho, antes de criar um`, 'vuetify-components.md', 'catalog-ui.md'],
     ['Composables, stores, lógica compartilhada', 'composables.md', 'catalog-composables.md'],
     ['Services (`useAsync` wrappers), service vs composable', 'services.md', 'catalog-data.md'],
     ['Chamadas HTTP, repositories, camada de API', 'repositories.md', 'catalog-data.md'],

@@ -13,6 +13,15 @@
       "catalogs": []
     },
     {
+      "id": "vue-api",
+      "path": "vue/vue-api.md",
+      "title": "Catálogo do Vue",
+      "summary": "qual API do Vue usar em cada caso: ref/reactive, computed/watch, v-if/v-show, refs de template, built-ins, performance",
+      "requires": [],
+      "assumes": [],
+      "catalogs": []
+    },
+    {
       "id": "dry",
       "path": "core/dry.md",
       "title": "Reuso e DRY",
@@ -27,7 +36,7 @@
       "id": "vuetify",
       "path": "vuetify/vuetify.md",
       "title": "Vuetify",
-      "summary": "tokens de tema, classes utilitárias, defaults, mobile, ApexCharts",
+      "summary": "tokens de tema, classes utilitárias, defaults, mobile, validação, ApexCharts",
       "requires": [
         "vuetify"
       ],
@@ -36,6 +45,19 @@
       ],
       "catalogs": [
         "stack.md"
+      ]
+    },
+    {
+      "id": "vuetify-components",
+      "path": "vuetify/vuetify-components.md",
+      "title": "Catálogo do Vuetify",
+      "summary": "qual componente, diretiva ou composable do Vuetify já existe para cada trabalho; pares que se confundem; labs",
+      "requires": [
+        "vuetify"
+      ],
+      "assumes": [],
+      "catalogs": [
+        "catalog-ui.md"
       ]
     },
     {

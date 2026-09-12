@@ -1,5 +1,5 @@
 {
   "name": "minimal",
   "description": "Vue + Vuetify apenas.",
-  "rules": ["vue", "dry", "vuetify"]
+  "rules": ["vue", "vue-api", "dry", "vuetify", "vuetify-components"]
 }

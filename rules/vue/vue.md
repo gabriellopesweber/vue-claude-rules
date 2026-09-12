@@ -1,5 +1,9 @@
 # Regras de Componentes Vue
 
+> **Esta página é sobre a forma do componente.** Qual API do Vue usar para cada coisa — `ref` ou
+> `reactive`, `computed` ou `watch`, `v-if` ou `v-show`, `useTemplateRef`, `<Teleport>`,
+> performance — está em `vue-api.md`.
+
 ## Estrutura — a ordem padrão deste pacote
 
 > **É default, não regra.** A ordem abaixo é a que este pacote adota quando o projeto não tem outra;
@@ -89,6 +93,13 @@ const dialog = defineModel({ type: Boolean, default: false }) // para v-model
 - **Sem lógica no `<script setup>`** — ele guarda o fio entre o composable e o template; o que responde *como funciona* mora num composable. O corte está em `composables.md` § *"O que pode ficar no `<script setup>`"*
 - Funções: `const handleAction = () => {}` no topo (sem bloco `methods`)
 - Eventos: kebab-case (`update:modelValue`, `confirm`, `cancel`)
+- **`v-for` sempre com `key` estável**, e **nunca `v-if` no mesmo elemento** — as duas são regras
+  essenciais do style guide do Vue, e as duas falham em silêncio (estado que gruda na linha errada,
+  variável da iteração que não existe). O porquê está em `vue-api.md` § *Template*
+- **Prop declarada com tipo e `required`/`default`** — é o que documenta a API do componente e o que
+  faz o Vue avisar em desenvolvimento
+- **Nome de componente com mais de uma palavra** (`UserCard`, não `Card`) — elemento HTML é sempre
+  uma palavra, e a colisão é com o HTML de hoje e o de amanhã
 - **Sem comentários** salvo lógica genuinamente não óbvia
 - Estilos scoped; preferir classes utilitárias da lib de UI antes de escrever CSS
 - **Lint antes de commitar** — rodar `pnpm lint` (ou `pnpm lint:fix` para autofix) e deixar **sem erros**. Durante o trabalho dá pra mirar arquivos com `npx eslint <arquivos>`.

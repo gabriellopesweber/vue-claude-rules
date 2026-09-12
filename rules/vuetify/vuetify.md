@@ -1,8 +1,11 @@
 # Regras Vuetify
 
-> **Escopo:** vale para projetos que usam **Vuetify** (verificado contra a 4.1.5). Noutra lib de UI o princípio ("cor só por token do tema, nunca hex no componente") continua valendo, mas os nomes de token e as props desta página não. Não instale Vuetify para "seguir a regra".
+> **Escopo:** vale para projetos que usam **Vuetify** (verificado contra a 4.2.1). Noutra lib de UI o princípio ("cor só por token do tema, nunca hex no componente") continua valendo, mas os nomes de token e as props desta página não. Não instale Vuetify para "seguir a regra".
 >
 > Três seções são condicionais mesmo dentro do Vuetify: **Tema** (só onde há mais de um tema), **ApexCharts** (só onde `vue3-apexcharts` já é dependência) e **Autocomplete** (só onde há formulário).
+>
+> **Qual componente usar para cada trabalho:** `vuetify-components.md` — o inventário do framework.
+> Esta página é sobre *como* usar; aquela, sobre *o que existe*.
 >
 > **Defaults de componente, paleta e tokens extras deste projeto:** `.claude/rules/project/stack.md`.
 
@@ -72,6 +75,39 @@ createVuetify({
 **Não redeclarar** o que já é default sem motivo explícito: além do ruído, mascara a mudança quando o default muda. Para variar num escopo específico, use `<v-defaults-provider>` em volta do trecho, em vez de repetir prop a prop.
 
 `density` aceita `'default'`, `'comfortable'` ou `'compact'` — a prop `dense` não existe mais (sobrevive só no `VRow`, já deprecada, apontando para `density`).
+
+## Validação — os aliases que a 4 traz
+
+*Só onde há formulário.*
+
+Na 4 o sistema de regras saiu do labs e passa a ser exportado pelo pacote: `createRulesPlugin` e
+`useRules`, de `'vuetify'`. Instalado, ele aceita **alias em texto** no `:rules` e resolve a
+mensagem pelo locale do Vuetify (`$vuetify.rules.*`) — ou seja, já traduzida junto com o resto da lib:
+
+```js
+const vuetify = createVuetify({ /* … */ })
+app.use(vuetify)
+app.use(createRulesPlugin({ aliases: { /* regras próprias */ } }, vuetify.locale))
+```
+
+```html
+<v-text-field :rules="['required', 'email', ['maxLength', 40]]" />
+```
+
+Os aliases de fábrica são `required` · `email` · `number` · `integer` · `capital` · `maxLength` ·
+`minLength` · `strictLength` · `exclude` · `notEmpty` · `pattern`. Cada um aceita uma mensagem
+própria como último argumento (`['maxLength', 40, 'Muito longo']`).
+
+> ⚠️ **Alias sem o plugin instalado não falha: valida sempre como erro.** A validação do Vuetify
+> trata regra que não é função como se fosse o **resultado** dela, e resultado em texto é mensagem
+> de erro. Então `:rules="['required']"` sem `createRulesPlugin` deixa o campo permanentemente
+> inválido, exibindo a palavra `required` como se fosse a mensagem — sem erro no console e sem
+> aviso. Verificado no código da 4.2.1.
+
+**Não conviva com dois sistemas de regra.** Onde o projeto já tem a sua camada de validação
+(`composables.md` § *Validação de formulários*), ela continua sendo a única — `project/` vence
+`shared/`. Onde não tem, estes aliases são a razão de não construir uma: tradução, parametrização e
+mensagem própria já vêm resolvidas.
 
 ## Responsividade
 

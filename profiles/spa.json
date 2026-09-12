@@ -1,5 +1,5 @@
 {
   "name": "spa",
   "description": "SPA com backend, sem suíte de teste.",
-  "rules": ["vue", "dry", "vuetify", "feedback", "composables", "services", "repositories", "i18n"]
+  "rules": ["vue", "vue-api", "dry", "vuetify", "vuetify-components", "feedback", "composables", "services", "repositories", "i18n"]
 }

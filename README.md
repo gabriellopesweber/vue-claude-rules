@@ -73,8 +73,10 @@ npx vue-claude-rules list   # o catálogo, a qualquer momento
 | id | Cobre | Exige | Partes pressupõem |
 |---|---|---|---|
 | `vue` | `<script setup>`, ordem de imports, props/emits/v-model, camadas, nomenclatura | — | — |
+| `vue-api` | qual API do Vue usar: ref/reactive, computed/watch, v-if/v-show, refs de template, built-ins, performance | — | — |
 | `dry` | reuso primeiro, quando extrair componente, checklist, anti-padrões | — | — |
-| `vuetify` | tokens de tema, props descontinuadas, defaults, mobile, ApexCharts | `vuetify` | `vue3-apexcharts` |
+| `vuetify` | tokens de tema, props descontinuadas, defaults, mobile, validação, ApexCharts | `vuetify` | `vue3-apexcharts` |
+| `vuetify-components` | qual componente/diretiva/composable do Vuetify já existe para cada trabalho | `vuetify` | — |
 | `feedback` | toast, alerta persistente e inline — qual usar em cada caso | — | — |
 | `i18n` | estrutura JSON, nomenclatura de chaves, interpolação, proibições | `vue-i18n` | — |
 | `composables` | global vs view-scoped, Orquestrador + Filiações; seções de estado e validação | — | `pinia` |
@@ -146,11 +148,13 @@ rules/
 │   └── tests.md        FIRST, pirâmide, 4 pilares, test doubles, co-localização
 ├── vue/
 │   ├── vue.md          script setup, ordem de imports, camadas, nomenclatura
+│   ├── vue-api.md      catálogo do Vue: qual API para cada caso, anti-padrões, performance
 │   ├── composables.md  Pinia+persist, global vs view-scoped, Orquestrador+Filiações
 │   ├── services.md     service vs composable, padrão useAsync
 │   └── repositories.md toda HTTP via repository
 ├── vuetify/
-│   └── vuetify.md      tokens de tema, deprecações, mobile, ApexCharts
+│   ├── vuetify.md              tokens de tema, deprecações, mobile, validação, ApexCharts
+│   └── vuetify-components.md   catálogo do Vuetify: qual peça já existe, pares confundidos, labs
 └── i18n/
     └── i18n.md         estrutura JSON, nomenclatura, proibições
 ```

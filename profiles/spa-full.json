@@ -1,5 +1,5 @@
 {
   "name": "spa-full",
   "description": "SPA com backend e suíte de teste: Pinia, axios, vue-i18n, Vitest.",
-  "rules": ["vue", "dry", "vuetify", "feedback", "composables", "services", "repositories", "i18n", "tests"]
+  "rules": ["vue", "vue-api", "dry", "vuetify", "vuetify-components", "feedback", "composables", "services", "repositories", "i18n", "tests"]
 }

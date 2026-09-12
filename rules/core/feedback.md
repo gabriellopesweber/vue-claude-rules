@@ -57,7 +57,7 @@ e cujo esquecimento não dá erro.
 
 > **O que é inventário, e por isso não está aqui:** qual campo do erro carrega o discriminador
 > (`code`, status, `extensions`…), o formato da chave, e o nome do composable que faz a resolução.
-> Isso muda com o backend e com a lib de i18n — está em `.claude/rules/project/`.
+> Isso muda com o backend e com a lib de i18n — está em `.claude/rules/project/stack.md`.
 
 > [!warning] Chave montada em tempo de execução some do `grep`
 > `errors.foo_${code}` não é encontrada por busca textual. A chave parece órfã numa limpeza de

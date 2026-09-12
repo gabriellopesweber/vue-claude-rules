@@ -1,5 +1,5 @@
 {
   "name": "site",
   "description": "Site/landing com i18n, sem backend nem estado global.",
-  "rules": ["vue", "dry", "vuetify", "i18n"]
+  "rules": ["vue", "vue-api", "dry", "vuetify", "vuetify-components", "i18n"]
 }

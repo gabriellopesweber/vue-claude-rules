@@ -5,7 +5,7 @@
 > | Seção | Pressupõe | Se não existe |
 > |---|---|---|
 > | Persistência via Pinia | `pinia` + `pinia-plugin-persistedstate` | Não instale Pinia para guardar uma preferência — `ref` no módulo ou `localStorage` encapsulado num composable resolve. A regra existe para impedir `localStorage` **espalhado**, não para exigir Pinia. |
-> | Validação via `useValidation` | `src/validations/` + `validation.json` | Adote o código base de `scaffold/` (`useValidation.js` + `validations/` + `locales/validation.json`) quando as regras começarem a repetir entre formulários; até lá, as regras da lib de UI bastam. |
+> | Validação via `useValidation` | `src/validations/` + `validation.json` | Adote o código base de `scaffold/` (`useValidation.js` + `validations/` + `locales/validation.json`) quando as regras começarem a repetir entre formulários; até lá, as regras da lib de UI bastam — no Vuetify 4, os aliases de `createRulesPlugin` cobrem o comum já traduzidos (ver `vuetify.md` § *Validação*). **Duas camadas de regra no mesmo projeto é o que não pode.** |
 > | Orquestrador + Filiações | uma view genuinamente pesada | Padrão para views que já doem. Aplicar numa view simples é overhead — o que vale para toda view é a seção *"O que pode ficar no `<script setup>`"*, um degrau abaixo. |
 >
 > **Antes de criar qualquer composable, consulte o catálogo do projeto** (`.claude/rules/project/catalog-composables.md`) — a lista do que já existe é verdade local, não vive aqui.
