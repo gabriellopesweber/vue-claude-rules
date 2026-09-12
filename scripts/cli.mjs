@@ -2,6 +2,7 @@
 import { runBuild } from './build.mjs'
 import { runInit } from './init.mjs'
 import { printCatalog } from './manifest.mjs'
+import { runSkill } from './skill.mjs'
 
 const [command, ...rest] = process.argv.slice(2)
 
@@ -20,6 +21,8 @@ const usage = () => {
   sync --check                        falha se shared/ divergir ou a adoção estiver incompleta
   build --standalone [--out <dir>]    gera um .claude/ autocontido para distribuição
                                       (template à venda, boilerplate, entrega a cliente)
+  skill "<o que se pede>" [--force]   cria .claude/skills/<slug>/SKILL.md a partir do esqueleto
+                                      (frontmatter, passos com verificação, parada e referências)
 
 Adoção guiada por agente: veja ADOPTING.md no pacote.`)
 }
@@ -49,6 +52,14 @@ switch (command) {
       cwd: process.cwd(),
       out: flag('out') ?? 'dist-claude/.claude',
       projectName: flag('name'),
+    })
+    break
+  case 'skill':
+    await runSkill({
+      cwd: process.cwd(),
+      name: rest.find((arg) => !arg.startsWith('--')) ?? null,
+      force: rest.includes('--force'),
+      out: flag('out') ?? '.claude/skills',
     })
     break
   default:

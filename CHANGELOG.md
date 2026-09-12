@@ -2,6 +2,46 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.12.0 — 2026-09-12
+
+### Adicionado
+- **Construtor de skill: `npx vue-claude-rules skill "<o que se pede>"`.** Escreve
+  `.claude/skills/<slug>/SKILL.md` a partir de um esqueleto, com o que se esquece: **frontmatter com
+  `description`**, passos com verificação, parada antes do irreversível, e a seção de referências.
+
+  **O corpo vem em `TODO` de propósito — o gerador entrega a forma, não o procedimento.** Nada dele
+  é específico de projeto: fluxo de git, de deploy ou de mensagem pertence ao repositório que os
+  pratica, não a um pacote que outros consomem.
+
+  Recusa sobrescrever skill existente (`--force` para recomeçar) e, chamado sem nome, **lista os que
+  já existem** — porque o erro mais provável não é escrever mal o skill novo, é abrir o segundo para
+  um procedimento que o primeiro já cobria.
+
+- **`skills.md` — quando um procedimento merece virar skill.** O corte entre as quatro coisas que se
+  confundem: **regra** (política, sempre válida), **skill** (passos, ordem, verificação), **script**
+  (o que não tem julgamento) e **catálogo** (o que já existe). Mais a anatomia do `SKILL.md`, o nome,
+  onde mora, e quando **não** criar.
+
+  **O centro da página é "skill aponta para a regra, não copia a política".** Duas cópias divergem na
+  primeira correção que só uma recebe, e quem lê o skill segue a versão velha sem nenhum sinal de que
+  existe outra. O skill carrega o fio e a ordem; a regra carrega o porquê e o critério.
+
+  Dois avisos que vêm de defeito visto, não de teoria: **sem frontmatter o skill não some, some da
+  busca** — continua correto e simplesmente não é invocado no dia em que serviria; e **"se falhar,
+  tente de novo" duplica recurso** — comando que cria issue, branch ou release frequentemente cria e
+  só depois falha num passo acessório, e o retry produz o segundo.
+
+  **Fica fora de todos os presets, de propósito.** É sobre a ferramenta que trabalha no projeto, não
+  sobre a stack dele; num repositório sem nenhum skill, carregá-la vira pressão para criar o
+  primeiro. Quem tem (ou vai ter) a inclui na lista granular. O gerador funciona com ou sem ela.
+
+### Corrigido
+- **A reescrita do `build --standalone` passa a cobrir a referência ao diretório** —
+  `.claude/rules/project/` sem nome de arquivo. Todas as reescritas existentes exigem um arquivo,
+  então a citação de parágrafo escapava e a trava de vazamento reprovava o build inteiro. Era o
+  defeito que a v1.11.0 consertou **na fonte** (em `feedback.md`); agora está consertado na
+  ferramenta, que é onde ele para de voltar.
+
 ## v1.11.0 — 2026-09-12
 
 ### Adicionado

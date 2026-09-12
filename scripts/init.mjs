@@ -363,6 +363,7 @@ const buildClaudeMd = (pkg, stack, refs, selection, distMode) => {
     ['Chamadas HTTP, repositories, camada de API', 'repositories.md', 'catalog-data.md'],
     ['Texto visível ao usuário, chaves de tradução, locales', 'i18n.md', 'stack.md'],
     ['Escrever/editar testes, localização dos `.test`, mocks', 'tests.md', 'stack.md'],
+    ['Escrever um skill do agente: quando vale, anatomia do `SKILL.md`', 'skills.md', 'stack.md'],
     ['Adotar uma primitiva que a regra exige (`useAsync`, toast…)', 'scaffold.md', 'catalog-composables.md'],
   ]
     .filter(([, rule]) => refs.has(rule))

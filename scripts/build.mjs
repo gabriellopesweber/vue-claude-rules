@@ -55,6 +55,13 @@ const rewrite = (text) => {
   }
   out = out.replace(/`?\.claude\/rules\/project\/([\w.-]+)`?/g, '`.claude/rules/$1`')
 
+  // A referência ao **diretório**, sem nome de arquivo — `.claude/rules/project/`.
+  // Escapava das reescritas acima (todas exigem um arquivo), e a trava de
+  // vazamento então reprovava o build inteiro por causa de uma citação de
+  // parágrafo. Custou uma distribuição barrada por um caminho que nem precisava
+  // existir no destino: lá a hierarquia é plana.
+  out = out.replace(/`?\.claude\/rules\/(project|shared)\/`?/g, '`.claude/rules/`')
+
   // Referências curtas — `shared/tests.md`, `project/stack.md` — aparecem no texto
   // corrido com a mesma frequência que as completas.
   out = out.replace(/`shared\/([\w.-]+\.md)`/g, '`.claude/rules/$1`')
@@ -121,6 +128,7 @@ const standaloneClaudeMd = (projectName, ruleFiles) => {
     ['Repositories e services já existentes', 'data.md'],
     ['Texto visível ao usuário, traduções', 'i18n.md'],
     ['Testes', 'tests.md'],
+    ['Escrever um skill: quando vale, anatomia do SKILL.md', 'skills.md'],
     ['Configuração da stack: auth, tema, locales, scripts', 'stack.md'],
   ].filter(([, file]) => has(file))
 

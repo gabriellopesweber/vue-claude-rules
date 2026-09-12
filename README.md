@@ -83,6 +83,7 @@ npx vue-claude-rules list   # o catálogo, a qualquer momento
 | `services` | service vs composable, padrão `useAsync`, onde cada um mora | — | `axios` |
 | `repositories` | toda chamada HTTP via repository, estrutura, tratamento de erros | — | `axios` |
 | `tests` | FIRST, pirâmide, 4 pilares, test doubles, co-localização, E2E | um runner | `vitest` |
+| `skills` | quando um procedimento vira skill (e quando é regra ou script), anatomia do `SKILL.md` | — | — |
 
 **"Exige" e "partes pressupõem" são coisas diferentes.** Sem `vue-i18n`, a regra `i18n` é inútil — o texto todo trata de `t()` e de `locales/`. Já `services` continua valendo inteira com `fetch`: a divisão service/composable não é sobre axios; só os detalhes de interceptor e 401 são. `sync` e `init` avisam nos dois casos, com peso diferente, e nenhum deles bloqueia — quem escolheu pode estar um passo antes de instalar.
 
@@ -104,6 +105,31 @@ Atalho para os casos comuns, via `claudeRules.profile` ou `--profile <nome>`:
 | `spa-full` | + tests |
 
 Lista granular vence o preset.
+
+**`skills` fica fora de todos os presets, de propósito.** Ela é sobre a ferramenta que trabalha no
+projeto, não sobre a stack dele — e num repositório sem nenhum skill vira pressão para criar o
+primeiro. Quem tem (ou vai ter) a inclui na lista granular. O **gerador** abaixo funciona com ou sem
+ela.
+
+## Construtor de skill
+
+```bash
+npx vue-claude-rules skill "release para produção"
+# → .claude/skills/release-para-producao/SKILL.md
+```
+
+Escreve o esqueleto no lugar certo, com o que se esquece: **frontmatter com `description`** (que é o
+gatilho de invocação, e a única parte lida antes da decisão de usar o skill), passos com verificação,
+**parada antes do irreversível** e a seção de referências — que existe para o skill **citar** a regra
+em vez de copiar a política.
+
+O corpo vem marcado com `TODO`: o gerador entrega a **forma**, não o procedimento. Nada dele é
+específico de projeto. Recusa sobrescrever um skill existente (`--force` para recomeçar), e, chamado
+sem nome, lista os skills que já existem — um skill por procedimento, e o vizinho quase sempre já
+cobre o fluxo.
+
+O critério de **quando um procedimento merece virar skill** — e quando é regra, ou script — está na
+regra `skills`.
 
 ## scaffold — o código das primitivas
 
@@ -141,10 +167,12 @@ Gera um `.claude/rules/` autocontido: hierarquia achatada (`shared/x.md` e `proj
 
 ```
 scaffold/          código base das primitivas (copiar sob demanda)
+└── skills/         esqueleto de SKILL.md (gerado por `skill <nome>`)
 rules/
 ├── core/           agnóstico de stack
 │   ├── dry.md          princípio de reuso, quando extrair, anti-padrões
 │   ├── feedback.md     os 3 mecanismos: toast / stack global / inline
+│   ├── skills.md       skill × regra × script, anatomia do SKILL.md, parada antes do irreversível
 │   └── tests.md        FIRST, pirâmide, 4 pilares, test doubles, co-localização
 ├── vue/
 │   ├── vue.md          script setup, ordem de imports, camadas, nomenclatura
