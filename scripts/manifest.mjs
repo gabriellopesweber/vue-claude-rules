@@ -88,8 +88,8 @@ export const formatDepNote = ({ rule, level, missing }) =>
  * dependência que ela pressupõe.
  */
 export const rulesForStack = (manifest, stack) => {
-  const wanted = ['vue', 'dry']
-  if (stack.vuetify) wanted.push('vuetify')
+  const wanted = ['vue', 'vue-api', 'dry']
+  if (stack.vuetify) wanted.push('vuetify', 'vuetify-components')
   if (stack.pinia) wanted.push('composables')
   if (stack.axios) wanted.push('repositories', 'services')
   if (stack.i18n) wanted.push('i18n')

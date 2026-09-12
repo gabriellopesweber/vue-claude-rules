@@ -17,8 +17,10 @@
 | Tarefa envolve | Princípio (shared) | Inventário (project) |
 |---|---|---|
 | Componentes `.vue`, props, emits, template | `.claude/rules/shared/vue.md` | — |
+| Escolher API do Vue: ref/reactive, computed/watch, v-if/v-show, performance | `.claude/rules/shared/vue-api.md` | `.claude/rules/project/catalog-composables.md` |
 | Texto visível, chaves de tradução, locales | `.claude/rules/shared/i18n.md` | `.claude/rules/project/stack.md` |
 | Cores, tokens de tema, layout mobile, componentes da lib de UI | `.claude/rules/shared/vuetify.md` | `.claude/rules/project/stack.md` |
+| Escolher o componente da lib de UI antes de criar um | `.claude/rules/shared/vuetify-components.md` | `.claude/rules/project/catalog-ui.md` |
 | Composables, Pinia stores, lógica compartilhada | `.claude/rules/shared/composables.md` | `.claude/rules/project/catalog-composables.md` |
 | Services (`useAsync` wrappers) | `.claude/rules/shared/services.md` | `.claude/rules/project/catalog-data.md` |
 | Chamadas HTTP, repositories, camada de API | `.claude/rules/shared/repositories.md` | `.claude/rules/project/catalog-data.md` |

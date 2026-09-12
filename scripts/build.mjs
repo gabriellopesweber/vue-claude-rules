@@ -108,10 +108,12 @@ const standaloneClaudeMd = (projectName, ruleFiles) => {
   const has = (name) => ruleFiles.includes(name)
   const rows = [
     ['Criar/editar componentes `.vue`, props, emits, template', 'vue.md'],
+    ['Escolher API do Vue: ref/reactive, computed/watch, v-if/v-show, performance', 'vue-api.md'],
     ['Reutilização de UI, evitar duplicação, extrair componentes', 'dry.md'],
     ['Componentes já existentes — checar antes de criar', 'components.md'],
     ['Feedback ao usuário: toast, alerta, inline', 'feedback.md'],
     ['Cores, tokens de tema, layout mobile, componentes Vuetify', 'vuetify.md'],
+    ['Escolher o componente Vuetify para o trabalho, antes de criar um', 'vuetify-components.md'],
     ['Composables, stores, lógica compartilhada', 'composables.md'],
     ['Composables e stores já existentes', 'state.md'],
     ['Services e camada HTTP', 'services.md'],

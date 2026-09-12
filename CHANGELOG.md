@@ -2,6 +2,70 @@
 
 Semver: **patch** = texto/exemplo · **minor** = regra ou seção nova · **major** = muda convenção já adotada pelos consumidores.
 
+## v1.11.0 — 2026-09-12
+
+### Adicionado
+- **`vue-api.md` — o catálogo do Vue.** O pacote dizia como **organizar** um componente e onde a
+  lógica mora, e não dizia em lugar nenhum **qual API do Vue** usar para cada coisa. O agente
+  decidia por hábito: `watch` onde cabia `computed`, `reactive` onde só `ref` funciona, `:key` no
+  índice, `nextTick` espalhado para consertar ordem de atualização.
+
+  A página é escrita a partir da documentação oficial (verificada contra a **3.5**) e organizada por
+  **decisão**, não por API: estado reativo, derivar × reagir, props/emits/model, template,
+  refs de template e ids, componentes embutidos, fronteiras de dado, performance na ordem do guia
+  oficial, e uma tabela de anti-padrões.
+
+  **O critério do que entrou é o modo de falha silencioso.** As três limitações do `reactive()`
+  (primitivo, reatribuição, desestruturação) falham **sem erro**: o valor muda e a tela não. O mesmo
+  vale para `watch(obj.count, …)` que nunca dispara, para o desempacotamento de ref que só funciona
+  no topo do template, para a desestruturação reativa de props (3.5) que congela ao ser passada sem
+  getter, e para o watcher criado depois de um `await`, que não é parado no unmount e segue
+  disparando sobre um componente que não existe mais.
+
+- **`vuetify-components.md` — o catálogo do Vuetify.** Extraído do próprio pacote na **4.2.1**:
+  componentes agrupados por trabalho, os pares que se confundem (`VSelect` × `VAutocomplete` ×
+  `VCombobox`, `VDataTable` × `VDataTableServer`, `VDialog` × `VMenu` × `VBottomSheet`), as
+  diretivas, os composables públicos e a lista do que é **labs**.
+
+  Fecha com *"o que já vem pronto e costuma ser reescrito à mão"* — `IntersectionObserver` que é
+  `v-intersect`, `matchMedia` que é `useDisplay()`, o bloco de "nenhum resultado" que é
+  `VEmptyState`, a fila caseira de toasts que é `VSnackbarQueue`. É a seção que justifica a página:
+  o custo não é escrever errado, é escrever de novo o que já estava instalado.
+
+  **Labs entra atrás de um componente próprio.** A API pode mudar em release menor — e muita coisa
+  estável hoje passou por lá (`VDateInput`, `VFileUpload`, `VIconBtn`, `VColorInput`,
+  `VPullToRefresh`, `VStepperVertical` e `VPicker` graduaram na 4). Importado num arquivo só, o dia
+  da mudança é um arquivo, não trinta telas.
+
+- **`vuetify.md` ganha *"Validação — os aliases que a 4 traz"*.** Na 4 o sistema de regras saiu do
+  labs: `createRulesPlugin`/`useRules` são exportados pelo pacote, aceitam alias em texto
+  (`:rules="['required', ['maxLength', 40]]"`) e resolvem a mensagem pelo locale do Vuetify.
+
+  Vem com a armadilha, verificada no código da 4.2.1: **alias sem o plugin instalado não falha — ele
+  valida sempre como erro.** A validação trata regra que não é função como se fosse o *resultado*
+  dela, e resultado em texto é mensagem de erro; o campo fica permanentemente inválido exibindo a
+  palavra `required`, sem nada no console.
+
+  E a consequência para quem já tem camada própria: **dois sistemas de regra no mesmo projeto é o
+  que não pode.** Onde `composables.md` § *Validação* se aplica, ela continua sendo a única; onde
+  não há camada, estes aliases são a razão de não construir uma.
+
+### Alterado
+- **`vue.md` aponta para `vue-api.md`** e ganha, nas *Regras críticas*, as três essenciais do style
+  guide do Vue que faltavam: `v-for` com `key` estável, nunca `v-if` no mesmo elemento, prop
+  declarada com tipo e `required`/`default`, e nome de componente com mais de uma palavra. Entram na
+  lista das críticas porque é o único trecho que alguém lê inteiro — e porque as duas primeiras
+  falham em silêncio.
+- **`vuetify.md` passa a declarar verificação contra a 4.2.1** (era 4.1.5) e aponta para o catálogo.
+- **`composables.md`** diz, na tabela de escopo, que no Vuetify 4 os aliases já cobrem o comum antes
+  de valer a pena adotar `useValidation` — e que as duas camadas não convivem.
+
+### Corrigido
+- **O `build --standalone` falhava para todo consumidor que carregasse `feedback.md`.** A regra
+  citava `.claude/rules/project/` **sem nome de arquivo**, e a reescrita de referências só cobre o
+  caminho com arquivo — então a trava de vazamento acusava a divisão `shared/project` no material
+  que ia ao cliente. Agora a referência nomeia `stack.md`, que é onde o inventário de fato mora.
+
 ## v1.10.0 — 2026-09-10
 
 ### Adicionado
